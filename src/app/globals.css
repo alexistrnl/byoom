@@ -131,23 +131,17 @@
   
   html {
     overscroll-behavior: none;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
+    -ms-touch-action: pan-y pinch-zoom;
   }
   
   body {
     @apply bg-background text-foreground;
     overscroll-behavior-y: contain;
     overscroll-behavior-x: none;
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
+    -ms-touch-action: pan-y pinch-zoom;
   }
   
   /* Désactiver la sélection de texte pour un feel plus natif */
@@ -177,11 +171,8 @@
   
   /* Container scrollable principal - Next.js */
   #__next {
+    min-height: 100vh;
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     position: relative;
   }
@@ -190,9 +181,7 @@
   main,
   [data-scrollable] {
     width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+    min-height: 100vh;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
   }

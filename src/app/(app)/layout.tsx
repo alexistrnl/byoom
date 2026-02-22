@@ -30,11 +30,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="flex h-full flex-col"
+      className="flex min-h-screen flex-col"
       style={{
         backgroundColor: '#F5F0E8',
-        height: '100vh',
-        overflow: 'hidden',
       }}
     >
       {/* Navbar avec bouton retour */}
@@ -102,14 +100,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Link>
       </nav>
 
-      {/* Contenu scrollable */}
-      <main
-        className="flex-1 overflow-y-auto overflow-x-hidden"
-        style={{
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehaviorY: 'contain',
-        }}
-      >
+      {/* Contenu */}
+      <main className="flex-1">
         {children}
       </main>
     </div>
