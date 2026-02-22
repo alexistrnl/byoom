@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getPocketBaseClient } from '@/lib/pocketbase';
+import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login } = usePocketBase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,12 +18,15 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const pb = getPocketBaseClient();
-      await pb.collection('users').authWithPassword(email, password);
-      router.push('/dashboard');
+      await login(email, password);
+      // Attendre un peu pour que le contexte se mette à jour
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Utiliser window.location.href pour forcer un rechargement complet
+      // Cela garantit que le contexte PocketBase sera réinitialisé avec la nouvelle auth
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message || 'Erreur de connexion');
-    } finally {
       setLoading(false);
     }
   };

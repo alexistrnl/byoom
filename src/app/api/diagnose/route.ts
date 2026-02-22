@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const imageFile = formData.get('image') as File;
     const userPlantId = formData.get('userPlantId') as string;
     const userId = formData.get('userId') as string;
+    const observations = (formData.get('observations') as string) || '';
 
     if (!imageFile || !userPlantId || !userId) {
       return NextResponse.json(
@@ -59,7 +60,8 @@ export async function POST(request: NextRequest) {
       base64,
       plant.common_name,
       plant.scientific_name,
-      mimeType
+      mimeType,
+      observations
     );
 
     // Déterminer les points XP

@@ -18,15 +18,17 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const loadData = useCallback(async () => {
-    try {
-      if (!contextUser) {
-        router.push('/login');
-        return;
-      }
+    if (!contextUser) {
+      router.push('/login');
+      setLoading(false);
+      return;
+    }
 
+    try {
       const authData = pb.authStore.model;
       if (!authData) {
         router.push('/login');
+        setLoading(false);
         return;
       }
 
@@ -50,27 +52,32 @@ export default function DashboardPage() {
         requestKey: null,
       });
       setUserPlants(plants.items as any);
-      
-      await refresh();
     } catch (error) {
       console.error('Erreur lors du chargement:', error);
       router.push('/login');
     } finally {
       setLoading(false);
     }
-  }, [contextUser, pb, router, refresh]);
+  }, [contextUser, pb, router]);
 
   useEffect(() => {
-    if (!contextLoading && contextUser) {
-      loadData();
-    }
-  }, [contextLoading, contextUser, loadData]);
-
-  useEffect(() => {
-    const handleFocus = () => {
-      if (contextUser && !loading) {
+    if (!contextLoading) {
+      if (contextUser) {
         loadData();
+      } else {
+        // Si pas d'utilisateur après le chargement, rediriger vers login
+        setLoading(false);
+        router.push('/login');
       }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contextLoading, contextUser]);
+
+  useEffect(() => {
+    if (!contextUser || loading) return;
+    
+    const handleFocus = () => {
+      loadData();
     };
 
     window.addEventListener('focus', handleFocus);
@@ -225,8 +232,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ACTIONS RAPIDES (4 boutons) */}
-        <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-2 lg:grid-cols-4 md:gap-4">
+        {/* ACTIONS RAPIDES (6 boutons) */}
+        <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-2 lg:grid-cols-3 md:gap-4">
           <Link
             href="/identify"
             className="flex flex-col items-center justify-center rounded-3xl text-center text-white transition-all hover:scale-105 p-4 md:p-6"
@@ -273,7 +280,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href="/pokedex"
+            href="/byoombase"
             className="flex flex-col items-center justify-center rounded-3xl text-center transition-all hover:scale-105 p-4 md:p-6"
             style={{
               backgroundColor: '#CFD186',
@@ -284,9 +291,45 @@ export default function DashboardPage() {
             }}
           >
             <div className="mb-1 text-2xl md:mb-2 md:text-3xl">📖</div>
-            <div className="text-sm font-semibold md:text-base">Pokédex</div>
+            <div className="text-sm font-semibold md:text-base">ByoomBase</div>
             <div className="text-xs opacity-90 md:text-sm">Catalogue complet</div>
           </Link>
+
+          {/* Conseil de coupe - Prochainement */}
+          <div
+            className="flex flex-col items-center justify-center rounded-3xl text-center p-4 md:p-6"
+            style={{
+              backgroundColor: '#E5E5E5',
+              color: '#9CA3AF',
+              minHeight: '100px',
+              height: 'auto',
+              fontWeight: 600,
+              opacity: 0.7,
+              cursor: 'not-allowed',
+            }}
+          >
+            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">✂️</div>
+            <div className="text-sm font-semibold md:text-base">Conseil de coupe</div>
+            <div className="text-xs opacity-90 md:text-sm">Prochainement</div>
+          </div>
+
+          {/* Compatibilité des plantes - Prochainement */}
+          <div
+            className="flex flex-col items-center justify-center rounded-3xl text-center p-4 md:p-6"
+            style={{
+              backgroundColor: '#E5E5E5',
+              color: '#9CA3AF',
+              minHeight: '100px',
+              height: 'auto',
+              fontWeight: 600,
+              opacity: 0.7,
+              cursor: 'not-allowed',
+            }}
+          >
+            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">🌱</div>
+            <div className="text-sm font-semibold md:text-base">Compatibilité</div>
+            <div className="text-xs opacity-90 md:text-sm">Prochainement</div>
+          </div>
         </div>
 
         {/* DERNIÈRES PLANTES */}
@@ -335,13 +378,18 @@ export default function DashboardPage() {
                   ? `${pbUrl}/api/files/user_plants/${userPlant.id}/${userPlant.photos[0]}`
                   : plant?.cover_image || null;
 
-                const healthColor = getHealthColor(userPlant.health_score || 0);
-                const healthStatus =
-                  userPlant.health_score >= 80
-                    ? { label: 'Saine' }
+                // Vérifier si la plante a été diagnostiquée
+                const hasDiagnosis = userPlant.health_score > 0;
+                const healthColor = hasDiagnosis
+                  ? getHealthColor(userPlant.health_score)
+                  : '#CFD186';
+                const healthStatus = hasDiagnosis
+                  ? userPlant.health_score >= 80
+                    ? { label: 'Saine', color: '#10B981' }
                     : userPlant.health_score >= 50
-                    ? { label: 'Attention' }
-                    : { label: 'Critique' };
+                    ? { label: 'Attention', color: '#F59E0B' }
+                    : { label: 'Critique', color: '#EF4444' }
+                  : { label: 'Diagnostic à faire', color: '#CFD186' };
 
                 return (
                   <Link
@@ -383,9 +431,9 @@ export default function DashboardPage() {
                     <div
                       className="rounded-full px-3 py-1 text-xs font-semibold"
                       style={{
-                        backgroundColor: `${healthColor}30`,
-                        color: healthColor,
-                        border: `1px solid ${healthColor}60`,
+                        backgroundColor: `${healthStatus.color}40`,
+                        color: healthStatus.color,
+                        border: `1px solid ${healthStatus.color}60`,
                       }}
                     >
                       {healthStatus.label}

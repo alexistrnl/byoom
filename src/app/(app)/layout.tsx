@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -12,6 +13,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Pages où on ne veut pas afficher la navbar (dashboard a sa propre navigation)
   const hideNavbar = pathname === '/dashboard';
 
+  // Protection : si l'utilisateur est authentifié et arrive sur login, rediriger vers dashboard
+  useEffect(() => {
+    if (user && pathname === '/login') {
+      router.replace('/dashboard');
+    }
+  }, [user, pathname, router]);
+
 
   // Déterminer le titre de la page
   const getPageTitle = () => {
@@ -20,7 +28,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (pathname.startsWith('/my-plants/')) return 'Ma Plante';
     if (pathname === '/identify') return 'Identifier';
     if (pathname === '/diagnose') return 'Diagnostic';
-    if (pathname === '/pokedex') return 'Pokédex';
+    if (pathname === '/byoombase' || pathname.startsWith('/byoombase/')) return 'ByoomBase';
     return 'Byoom';
   };
 
@@ -47,8 +55,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Bouton retour */}
         <button
           onClick={() => {
-            // Essayer de revenir en arrière
-            router.back();
+            // Si l'utilisateur est authentifié, toujours rediriger vers le dashboard
+            // pour éviter de revenir vers login
+            if (user) {
+              router.push('/dashboard');
+            } else {
+              // Si pas authentifié, utiliser router.back()
+              router.back();
+            }
           }}
           className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all hover:bg-gray-100 active:scale-95"
           style={{ color: '#52414C' }}

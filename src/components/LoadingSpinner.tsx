@@ -19,8 +19,8 @@ export function LoadingSpinner({ message = 'Chargement...', size = 'md' }: Loadi
     >
       <div className="flex flex-col items-center gap-6">
         {/* Animation de plante qui pousse */}
-        <div className="relative" style={{ width: '100px', height: '100px' }}>
-          {/* Pot */}
+        <div className="relative" style={{ width: '120px', height: '140px' }}>
+          {/* Pot - centré en bas */}
           <div
             className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-b-lg"
             style={{
@@ -31,10 +31,12 @@ export function LoadingSpinner({ message = 'Chargement...', size = 'md' }: Loadi
             }}
           />
           
-          {/* Plante animée */}
+          {/* Plante animée - centrée au-dessus du pot */}
           <div
-            className="absolute bottom-10 left-1/2 -translate-x-1/2"
+            className="absolute left-1/2 flex items-center justify-center"
             style={{
+              bottom: '42px',
+              transform: 'translateX(-50%)',
               animation: 'plantGrow 1.5s ease-in-out infinite',
             }}
           >
@@ -49,24 +51,6 @@ export function LoadingSpinner({ message = 'Chargement...', size = 'md' }: Loadi
               🌿
             </div>
           </div>
-
-          {/* Particules de croissance */}
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#5B8C5A',
-                bottom: '50px',
-                left: `${50 + (i - 1) * 15}%`,
-                animation: `particleFloat 2s ease-in-out infinite`,
-                animationDelay: `${i * 0.3}s`,
-                opacity: 0.7,
-              }}
-            />
-          ))}
         </div>
 
         {/* Texte avec animation pulse */}

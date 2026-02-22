@@ -11,7 +11,7 @@ export default function Home() {
           Identifie. Soigne. Collectionne.
         </p>
         <p className="mb-8 text-lg text-gray-600">
-          Votre Pokédex végétal intelligent
+          Votre ByoomBase végétal intelligent
         </p>
         
         <div className="flex gap-4 justify-center">

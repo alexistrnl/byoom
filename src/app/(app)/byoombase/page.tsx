@@ -4,11 +4,12 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import PocketBase from 'pocketbase';
+import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { Plant } from '@/lib/types/pocketbase';
 
-export default function PokedexPage() {
+export default function ByoomBasePage() {
+  const { pb } = usePocketBase();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -19,19 +20,18 @@ export default function PokedexPage() {
 
   const loadPlants = async () => {
     try {
-      // Utiliser une instance fraîche de PocketBase sans auth
-      const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
-      pb.authStore.clear(); // S'assurer qu'il n'y a pas de token d'auth
-      
       let filterQuery = '';
 
       if (filter !== 'all') {
         filterQuery = `tags ~ "${filter}"`;
       }
 
+      // Utiliser le contexte PocketBase mais la collection 'plants' est publique
+      // donc pas besoin de vérifier l'auth
       const result = await pb.collection('plants').getList(1, 100, {
         filter: filterQuery,
         sort: 'common_name',
+        requestKey: null,
       });
       setPlants(result.items as unknown as Plant[]);
     } catch (error) {
@@ -42,13 +42,13 @@ export default function PokedexPage() {
   };
 
   if (loading) {
-    return <LoadingSpinner message="Chargement du Pokédex..." />;
+    return <LoadingSpinner message="Chargement de la ByoomBase..." />;
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="mb-8 text-3xl font-bold text-[var(--color-night)]">📚 Pokédex</h1>
+        <h1 className="mb-8 text-3xl font-bold text-[var(--color-night)]">📚 ByoomBase</h1>
 
         {/* Filtres */}
         <div className="mb-6 flex flex-wrap gap-2">
@@ -99,7 +99,7 @@ export default function PokedexPage() {
           {plants.map((plant) => (
             <Link
               key={plant.id}
-              href={`/pokedex/${plant.id}`}
+              href={`/byoombase/${plant.id}`}
               className="rounded-lg bg-white p-4 shadow-md transition-shadow hover:shadow-lg"
             >
               {plant.cover_image ? (

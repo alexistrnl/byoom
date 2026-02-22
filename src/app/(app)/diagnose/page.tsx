@@ -25,6 +25,7 @@ export default function DiagnosePage() {
   const [error, setError] = useState('');
   const [checkedActions, setCheckedActions] = useState<Set<number>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
+  const [observations, setObservations] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -219,6 +220,7 @@ export default function DiagnosePage() {
       formData.append('image', image);
       formData.append('userPlantId', selectedPlantId);
       formData.append('userId', authData.id);
+      formData.append('observations', observations);
 
       const response = await fetch('/api/diagnose', {
         method: 'POST',
@@ -492,6 +494,37 @@ export default function DiagnosePage() {
                       className="mb-4 w-full rounded-2xl object-cover"
                       style={{ height: '300px' }}
                     />
+                    
+                    {/* Champ d'observations */}
+                    <div className="mb-4">
+                      <label
+                        className="mb-1 block text-sm font-semibold"
+                        style={{ color: '#52414C' }}
+                      >
+                        💬 Ajouter des observations (optionnel)
+                      </label>
+                      <p className="mb-2 text-xs" style={{ color: '#6B7280' }}>
+                        Décris ce que tu observes : jaunissement depuis quand, fréquence d'arrosage récente, exposition, changement récent...
+                      </p>
+                      <textarea
+                        value={observations}
+                        onChange={(e) => setObservations(e.target.value)}
+                        placeholder="Ex: Les feuilles jaunissent depuis 2 semaines, j'arrose tous les 3 jours, la plante est près d'un radiateur..."
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          border: '1px solid #CFD186',
+                          borderRadius: 12,
+                          padding: '0.75rem',
+                          fontFamily: 'inherit',
+                          fontSize: '0.875rem',
+                          color: '#52414C',
+                          background: 'white',
+                          resize: 'vertical',
+                        }}
+                      />
+                    </div>
+                    
                     <button
                       onClick={handleDiagnose}
                       disabled={loading}
@@ -504,6 +537,7 @@ export default function DiagnosePage() {
                       onClick={() => {
                         setImage(null);
                         setImagePreview(null);
+                        setObservations('');
                       }}
                       className="text-sm underline"
                       style={{ color: '#6B7280' }}

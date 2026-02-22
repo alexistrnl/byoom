@@ -170,6 +170,27 @@ export default function IdentifyPage() {
               </p>
             </div>
 
+            {/* DISCLAIMER */}
+            <div
+              className="mb-6 rounded-xl border-l-4 p-4"
+              style={{
+                backgroundColor: 'rgba(207, 209, 134, 0.1)',
+                borderColor: '#CFD186',
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <p className="mb-1 text-sm font-semibold" style={{ color: '#52414C' }}>
+                    Conseil pour une meilleure identification
+                  </p>
+                  <p className="text-xs leading-relaxed" style={{ color: '#596157' }}>
+                    Pour obtenir un résultat précis, prends la plante dans son ensemble plutôt qu'une petite pousse ou un élément isolé. Une photo partielle pourrait correspondre à plusieurs espèces différentes et donner une identification incorrecte.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* ZONE D'UPLOAD */}
             {!imagePreview ? (
               <div

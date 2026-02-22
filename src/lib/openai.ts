@@ -70,9 +70,42 @@ RÈGLE IMPORTANTE - difficulty (entier 1 à 5) :
 - 5 = expert : bonsaï avancé, plantes tropicales très exigeantes
 La majorité des plantes communes = 1 ou 2. Sois strict.
 
-RÈGLES POUR care_tips :
-- watering : DOIT TOUJOURS inclure la fréquence en semaines. Exemple : "Arroser toutes les 3-4 semaines, laisser sécher complètement entre les arrosages" ou "Arroser 1 fois par semaine en été, toutes les 2 semaines en hiver"
-- humidity : Sois honnête. Si la plante tolère l'air sec, écris : "Aucune exigence particulière, tolère très bien l'air sec". Si elle nécessite de l'humidité, précise le pourcentage ou le niveau requis.
+RÈGLES ULTRA-PRÉCISES POUR care_tips (spécifiques à CETTE espèce) :
+
+"watering" : DOIT inclure :
+- Fréquence EXACTE : ex "1x/semaine en été, 1x/3 semaines en hiver" ou "Tous les 5-7 jours en période de croissance"
+- Volume précis : ex "jusqu'à ce que l'eau s'écoule par le bas du pot" ou "50-100ml selon la taille du pot"
+- Méthode : arrosage par le haut/bas, eau à température ambiante, etc.
+- Signes spécifiques de sur-arrosage pour CETTE plante : ex "feuilles jaunes et molles, pourriture des racines"
+- Signes spécifiques de sous-arrosage pour CETTE plante : ex "feuilles qui s'enroulent, terreau qui se décolle du pot"
+
+"light" : DOIT inclure :
+- Exposition précise : nombre d'heures de lumière directe/indirecte par jour
+- Orientation fenêtre : nord/sud/est/ouest selon les besoins
+- Distance maximale de la fenêtre en mètres : ex "max 2m d'une fenêtre sud"
+- Ce qui se passe si trop de lumière pour CETTE espèce : ex "brûlures foliaires, décoloration"
+- Ce qui se passe si pas assez de lumière pour CETTE espèce : ex "étiolement, perte de couleur, chute des feuilles"
+
+"soil" : DOIT inclure :
+- Composition EXACTE du terreau idéal avec proportions : ex "60% terreau universel + 30% perlite + 10% écorces de pin" ou "50% terreau plantes vertes + 50% sable grossier"
+- pH idéal : ex "pH 6.0-6.5 (légèrement acide)"
+- Fréquence de rempotage : ex "Tous les 2 ans au printemps"
+- Signes qu'il faut rempoter : ex "racines qui sortent du pot, croissance ralentie, terreau qui sèche très vite"
+
+"temperature" : DOIT inclure :
+- Plage RÉELLE de cette espèce (pas 15-25°C générique) : ex "18-24°C en été, 12-18°C en hiver"
+- Température minimale absolue tolérée : ex "minimum 10°C, risque de dommages en dessous"
+- Température maximale tolérée : ex "jusqu'à 30°C si humidité élevée"
+- Sensibilité aux courants d'air : ex "très sensible, éviter les courants d'air froid"
+- Sensibilité aux radiateurs : ex "maintenir à 1m minimum des radiateurs"
+
+"humidity" : DOIT inclure :
+- Taux d'humidité idéal en % : ex "60-70% d'humidité relative"
+- Si humidité requise, méthodes concrètes :
+  * Brumisation : fréquence exacte (ex "2x/jour le matin et soir")
+  * Plateau de galets : instructions précises
+  * Humidificateur : type et distance recommandée
+- Si tolère air sec : le dire clairement : ex "Tolère très bien l'air sec (30-40%), aucune exigence particulière"
 
 Réponds UNIQUEMENT en JSON valide :
 {
@@ -107,7 +140,7 @@ Réponds UNIQUEMENT en JSON valide :
       },
     ],
     response_format: { type: 'json_object' },
-    max_tokens: 1000,
+    max_tokens: 2000,
   });
 
   const content = response.choices[0]?.message?.content;
@@ -124,12 +157,14 @@ Réponds UNIQUEMENT en JSON valide :
  * @param plantName - Nom de la plante
  * @param plantScientificName - Nom scientifique de la plante (optionnel)
  * @param mimeType - Type MIME de l'image (par défaut: 'image/jpeg')
+ * @param observations - Observations de l'utilisateur (optionnel)
  */
 export async function diagnosePlant(
   imageBase64: string,
   plantName: string,
   plantScientificName?: string,
-  mimeType: string = 'image/jpeg'
+  mimeType: string = 'image/jpeg',
+  observations?: string
 ): Promise<DiagnosisResult> {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
@@ -148,6 +183,27 @@ Exemples de format pour "type" :
 - "Flétrissement (arrosage insuffisant ou excès)"
 - "Chute des feuilles (stress hydrique probable)"
 
+RÈGLES ULTRA-PRÉCISES POUR LES SOLUTIONS :
+
+Pour chaque "solution" dans "issues", tu DOIS répondre à ces 4 questions :
+1. QUOI faire exactement : produit spécifique (nom commercial si possible), geste précis, outil nécessaire
+2. QUAND le faire : immédiatement / dans X jours / à la prochaine saison / conditions météo
+3. COMMENT : dosage exact, technique précise, durée du traitement, fréquence
+4. COMMENT SAVOIR si ça marche : signe de guérison attendu, délai avant amélioration visible
+
+Exemple de BONNE solution :
+"Retirer immédiatement les feuilles touchées avec des ciseaux désinfectés à l'alcool à 70°. Appliquer un fongicide à base de cuivre (ex: bouillie bordelaise) dilué à 2% (20ml pour 1L d'eau) sur toutes les feuilles, dessus et dessous, tous les 7 jours pendant 3 semaines. Améliorer la ventilation en espaçant les plantes. Signe de guérison : pas de nouvelles taches après 2 semaines, feuilles existantes ne s'aggravent pas."
+
+Exemple de MAUVAISE solution (trop vague) :
+"Traiter avec un fongicide et améliorer les conditions." ❌
+
+Pour "immediate_actions" : 
+- Actions à faire dans les 24h maximum
+- Très concrètes et actionnables : ex "Isoler la plante à 2m minimum des autres", "Réduire l'arrosage à 1x/2 semaines immédiatement", "Retirer les feuilles mortes avec des gants"
+
+Pour "prevention_tips" :
+- Habitudes à adopter avec fréquence précise : ex "Vérifier l'humidité du terreau avec un doigt 2x/semaine", "Nettoyer les feuilles avec un chiffon humide 1x/mois", "Fertiliser avec un engrais équilibré 1x/mois d'avril à septembre"
+
 Réponds UNIQUEMENT en JSON valide :
 {
   "health_score": 0-100,
@@ -156,12 +212,12 @@ Réponds UNIQUEMENT en JSON valide :
     {
       "type": "Nom du problème (cause probable si incertaine)",
       "severity": "faible|modéré|grave",
-      "description": "explication",
-      "solution": "action recommandée"
+      "description": "explication détaillée du problème visible",
+      "solution": "Solution ultra-précise avec QUOI/QUAND/COMMENT/COMMENT SAVOIR"
     }
   ],
-  "immediate_actions": ["action1", "action2"],
-  "prevention_tips": ["conseil1", "conseil2"]
+  "immediate_actions": ["action concrète dans les 24h", "autre action urgente"],
+  "prevention_tips": ["habitude avec fréquence précise", "autre conseil préventif"]
 }`,
       },
       {
@@ -173,11 +229,19 @@ Réponds UNIQUEMENT en JSON valide :
               url: `data:${mimeType};base64,${imageBase64}`,
             },
           },
+          ...(observations
+            ? [
+                {
+                  type: 'text' as const,
+                  text: `Observations de l'utilisateur : ${observations}`,
+                },
+              ]
+            : []),
         ],
       },
     ],
     response_format: { type: 'json_object' },
-    max_tokens: 1500,
+    max_tokens: 3000,
   });
 
   const content = response.choices[0]?.message?.content;

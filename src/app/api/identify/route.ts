@@ -103,34 +103,69 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier si l'utilisateur a déjà cette plante
-    const existingUserPlants = await pb.collection('user_plants').getList(1, 1, {
+    // Compter combien de plantes de cette espèce l'utilisateur a déjà
+    const existingUserPlants = await pb.collection('user_plants').getList(1, 100, {
       filter: `user = "${userId}" && plant = "${plant.id}"`,
+      requestKey: null,
     });
 
-    let isNewPlant = existingUserPlants.items.length === 0;
-    let userPlant;
-
-    if (isNewPlant) {
-      // Créer une nouvelle user_plant
-      // Pas de health_score initial : il faut faire un diagnostic pour connaître l'état de santé
-      userPlant = await pb.collection('user_plants').create({
-        user: userId,
-        plant: plant.id,
-        nickname: identification.common_name,
-        acquisition_date: new Date().toISOString(),
-        photos: [],
-        health_score: 0, // 0 = pas encore diagnostiquée
-        public_visible: true,
-        points_earned: 0,
-        streak_days: 0,
+    // Générer un nickname unique avec un numéro si l'utilisateur a déjà cette espèce
+    let nickname = identification.common_name;
+    if (existingUserPlants.items.length > 0) {
+      // Extraire tous les numéros utilisés dans les nicknames existants
+      const usedNumbers: number[] = [];
+      
+      existingUserPlants.items.forEach((up: any) => {
+        const currentNickname = up.nickname || '';
+        // Vérifier si le nickname correspond exactement au nom commun (pas de numéro)
+        if (currentNickname === identification.common_name) {
+          // Cette plante n'a pas de numéro, on la comptera comme #1
+          if (!usedNumbers.includes(1)) {
+            usedNumbers.push(1);
+          }
+        } else {
+          // Chercher un numéro dans le format "Nom #X" ou "Nom#X"
+          const match = currentNickname.match(/#(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1]);
+            if (!usedNumbers.includes(num)) {
+              usedNumbers.push(num);
+            }
+          }
+        }
       });
-
-      // Ajouter les points XP pour la première identification
-      await addPoints(userId, XP_REWARDS.IDENTIFY_NEW_PLANT, 'identification', userPlant.id);
-    } else {
-      userPlant = existingUserPlants.items[0];
+      
+      // Trouver le prochain numéro disponible
+      let nextNumber = 1;
+      if (usedNumbers.length > 0) {
+        // Trier les numéros et trouver le premier disponible
+        usedNumbers.sort((a, b) => a - b);
+        for (let i = 1; i <= usedNumbers.length + 1; i++) {
+          if (!usedNumbers.includes(i)) {
+            nextNumber = i;
+            break;
+          }
+        }
+      }
+      
+      nickname = `${identification.common_name} #${nextNumber}`;
     }
+
+    // Toujours créer une nouvelle user_plant (même espèce = plusieurs plantes)
+    const userPlant = await pb.collection('user_plants').create({
+      user: userId,
+      plant: plant.id,
+      nickname: nickname,
+      acquisition_date: new Date().toISOString(),
+      photos: [],
+      health_score: 0, // 0 = pas encore diagnostiquée
+      public_visible: true,
+      points_earned: 0,
+      streak_days: 0,
+    });
+
+    // Ajouter les points XP pour chaque nouvelle identification
+    await addPoints(userId, XP_REWARDS.IDENTIFY_NEW_PLANT, 'identification', userPlant.id);
 
     // Upload de l'image vers PocketBase storage dans le champ 'photos'
     try {
@@ -156,9 +191,10 @@ export async function POST(request: NextRequest) {
       },
       userPlant: {
         id: userPlant.id,
-        isNew: isNewPlant,
+        nickname: userPlant.nickname,
+        isNew: true, // Toujours considéré comme nouveau car c'est une nouvelle instance
       },
-      xpAwarded: isNewPlant ? XP_REWARDS.IDENTIFY_NEW_PLANT : 0,
+      xpAwarded: XP_REWARDS.IDENTIFY_NEW_PLANT,
     });
   } catch (error) {
     console.error('Erreur lors de l\'identification:', error);
