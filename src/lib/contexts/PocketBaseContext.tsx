@@ -41,7 +41,7 @@ export function PocketBaseProvider({ children }: { children: ReactNode }) {
       const authData = pb.authStore.model;
       if (authData && pb.authStore.isValid) {
         const userData = await pb.collection('users').getOne(authData.id, { requestKey: null });
-        setUser(userData as User);
+        setUser(userData as unknown as User);
       }
     } catch (error) {
       console.error('Erreur lors du chargement de l\'utilisateur:', error);
