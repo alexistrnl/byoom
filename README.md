@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌿 BYOOM — Pokédex Végétal Intelligent
 
-## Getting Started
+**Version** : 1.0 — Février 2026  
+**Domaine** : byoom.fr  
+**Type** : PWA (Progressive Web App) SaaS  
+**Stack** : React/Next.js + PocketBase + OpenAI Vision API
 
-First, run the development server:
+## 🚀 Démarrage rapide
 
+### Prérequis
+
+- Node.js 18+
+- PocketBase (self-hosted)
+- Clé API OpenAI
+
+### Installation
+
+1. **Cloner et installer les dépendances**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Configurer les variables d'environnement**
+```bash
+cp .env.example .env
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Remplir `.env` avec vos clés :
+- `NEXT_PUBLIC_POCKETBASE_URL` : URL de votre instance PocketBase
+- `OPENAI_API_KEY` : Votre clé API OpenAI
+- `STRIPE_SECRET_KEY` et `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` : Pour les abonnements (optionnel)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Configurer PocketBase**
 
-## Learn More
+Créer les collections suivantes dans PocketBase selon le schéma défini dans le cahier des charges :
+- `users`
+- `plants`
+- `user_plants`
+- `diagnoses`
+- `compatibilities`
+- `badges`
+- `activity_log`
 
-To learn more about Next.js, take a look at the following resources:
+4. **Lancer le serveur de développement**
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ouvrir [http://localhost:3000](http://localhost:3000)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Structure du projet
 
-## Deploy on Vercel
+```
+byoom/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/          # Pages d'authentification
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   ├── (app)/           # Pages principales (protégées)
+│   │   │   ├── dashboard/
+│   │   │   ├── identify/
+│   │   │   ├── diagnose/
+│   │   │   ├── my-plants/
+│   │   │   └── pokedex/
+│   │   ├── api/             # Routes API
+│   │   │   ├── identify/
+│   │   │   ├── diagnose/
+│   │   │   ├── compatibility/
+│   │   │   └── recipes/
+│   │   └── page.tsx          # Page d'accueil
+│   ├── components/
+│   │   └── camera/           # Composant de capture photo
+│   └── lib/
+│       ├── pocketbase.ts     # Client PocketBase
+│       ├── openai.ts         # Intégration OpenAI
+│       ├── gamification.ts   # Système XP/Badges
+│       └── types/            # Types TypeScript
+├── public/
+│   └── manifest.json         # Configuration PWA
+└── .env                      # Variables d'environnement
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎮 Fonctionnalités
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### MVP
+- ✅ Authentification (PocketBase)
+- ✅ Identification de plantes par IA (GPT-4o Vision)
+- ✅ Diagnostic de santé des plantes
+- ✅ Pokédex (catalogue de plantes)
+- ✅ Système de gamification (XP, niveaux, badges)
+- ✅ PWA installable
+
+### À venir (V1)
+- [ ] Compatibilité entre plantes
+- [ ] Recettes pour plantes comestibles
+- [ ] Conseils bonsaï
+- [ ] Rappels d'arrosage (notifications push)
+- [ ] Intégration Stripe (abonnements)
+- [ ] Vitrine publique des utilisateurs
+
+## 🔧 Configuration PocketBase
+
+Voir le cahier des charges pour le schéma complet des collections.
+
+## 📱 PWA
+
+L'application est configurée comme PWA :
+- Installable sur mobile et desktop
+- Mode offline (fiches plantes en cache)
+- Notifications push (à venir)
+
+## 🎯 Système de points XP
+
+| Action | XP |
+|--------|-----|
+| Identifier une nouvelle plante | +50 |
+| Diagnostic santé (plante saine) | +30 |
+| Diagnostic santé (problème trouvé) | +20 |
+| Photo quotidienne | +10 |
+| Streak 7 jours | +100 |
+| Streak 30 jours | +500 |
+
+## 📄 Licence
+
+Propriétaire — byoom.fr

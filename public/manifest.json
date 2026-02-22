@@ -1,0 +1,42 @@
+{
+  "name": "Byoom",
+  "short_name": "Byoom",
+  "description": "Identifie. Soigne. Collectionne. Votre Pokédex végétal intelligent.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F2EB",
+  "theme_color": "#2D5A27",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "education", "health"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Identifier une plante",
+      "short_name": "Identifier",
+      "description": "Identifier une nouvelle plante avec l'IA",
+      "url": "/identify",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Diagnostiquer",
+      "short_name": "Diagnostiquer",
+      "description": "Diagnostiquer la santé d'une plante",
+      "url": "/diagnose",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

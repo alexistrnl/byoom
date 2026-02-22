@@ -1,0 +1,152 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import PocketBase from 'pocketbase';
+import type { Plant } from '@/lib/types/pocketbase';
+
+export default function PokedexPage() {
+  const [plants, setPlants] = useState<Plant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<string>('all');
+
+  useEffect(() => {
+    loadPlants();
+  }, [filter]);
+
+  const loadPlants = async () => {
+    try {
+      // Utiliser une instance fraîche de PocketBase sans auth
+      const pb = new PocketBase(process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090');
+      pb.authStore.clear(); // S'assurer qu'il n'y a pas de token d'auth
+      
+      let filterQuery = '';
+
+      if (filter !== 'all') {
+        filterQuery = `tags ~ "${filter}"`;
+      }
+
+      const result = await pb.collection('plants').getList(1, 100, {
+        filter: filterQuery,
+        sort: 'common_name',
+      });
+      setPlants(result.items as unknown as Plant[]);
+    } catch (error) {
+      console.error('Erreur lors du chargement:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg text-gray-600">Chargement...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="mb-8 text-3xl font-bold text-[var(--color-night)]">📚 Pokédex</h1>
+
+        {/* Filtres */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`rounded-md px-4 py-2 ${
+              filter === 'all'
+                ? 'bg-[var(--color-moss)] text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Toutes
+          </button>
+          <button
+            onClick={() => setFilter('intérieur')}
+            className={`rounded-md px-4 py-2 ${
+              filter === 'intérieur'
+                ? 'bg-[var(--color-moss)] text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Intérieur
+          </button>
+          <button
+            onClick={() => setFilter('extérieur')}
+            className={`rounded-md px-4 py-2 ${
+              filter === 'extérieur'
+                ? 'bg-[var(--color-moss)] text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Extérieur
+          </button>
+          <button
+            onClick={() => setFilter('succulent')}
+            className={`rounded-md px-4 py-2 ${
+              filter === 'succulent'
+                ? 'bg-[var(--color-moss)] text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Succulentes
+          </button>
+        </div>
+
+        {/* Grille de plantes */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {plants.map((plant) => (
+            <Link
+              key={plant.id}
+              href={`/pokedex/${plant.id}`}
+              className="rounded-lg bg-white p-4 shadow-md transition-shadow hover:shadow-lg"
+            >
+              {plant.cover_image ? (
+                <div className="mb-4 aspect-video w-full overflow-hidden rounded-lg bg-gray-100">
+                  <img
+                    src={plant.cover_image}
+                    alt={plant.common_name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="mb-4 aspect-video w-full rounded-lg bg-gray-200 flex items-center justify-center">
+                  <span className="text-4xl">🌿</span>
+                </div>
+              )}
+
+              <h3 className="mb-1 font-semibold text-gray-800">{plant.common_name}</h3>
+              <p className="mb-2 text-xs text-gray-500 italic">{plant.scientific_name}</p>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-600">Difficulté:</span>
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((level) => (
+                    <span
+                      key={level}
+                      className={level <= plant.difficulty ? 'text-yellow-400' : 'text-gray-300'}
+                    >
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {plants.length === 0 && (
+          <div className="rounded-lg bg-white p-12 text-center shadow-md">
+            <div className="mb-4 text-6xl">🔍</div>
+            <h2 className="mb-2 text-xl font-semibold text-gray-800">
+              Aucune plante trouvée
+            </h2>
+            <p className="text-gray-600">Essayez un autre filtre</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
