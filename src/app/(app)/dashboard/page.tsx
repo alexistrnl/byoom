@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { calculateLevel } from '@/lib/gamification';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { BotanicAssistant } from '@/components/BotanicAssistant';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function DashboardPage() {
@@ -450,6 +451,7 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+      <BotanicAssistant />
     </div>
   );
 }

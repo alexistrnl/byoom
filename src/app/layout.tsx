@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PocketBaseProvider } from "@/lib/contexts/PocketBaseContext";
 import { PreventZoom } from "@/components/PreventZoom";
-import { BotanicAssistant } from "@/components/BotanicAssistant";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,7 +49,6 @@ export default function RootLayout({
         <PreventZoom />
         <PocketBaseProvider>
           {children}
-          <BotanicAssistant />
         </PocketBaseProvider>
       </body>
     </html>
