@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function MyPlantsPage() {
@@ -53,14 +54,7 @@ export default function MyPlantsPage() {
       : 0;
 
   if (loading || contextLoading) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center"
-        style={{ backgroundColor: 'var(--color-cream)', fontFamily: 'system-ui, sans-serif' }}
-      >
-        <div style={{ color: 'var(--color-night)' }}>Chargement...</div>
-      </div>
-    );
+    return <LoadingSpinner message="Chargement de tes plantes..." />;
   }
 
   return (
@@ -123,21 +117,26 @@ export default function MyPlantsPage() {
             {userPlants.map((userPlant) => {
               const plant = userPlant.expand?.plant as unknown as Plant | undefined;
               
-              // Déterminer le statut de santé
-              const healthStatus =
-                userPlant.health_score >= 80
+              // Vérifier si la plante a été diagnostiquée
+              const hasDiagnosis = userPlant.health_score > 0;
+              
+              // Déterminer le statut de santé (seulement si diagnostiquée)
+              const healthStatus = hasDiagnosis
+                ? userPlant.health_score >= 80
                   ? { label: 'Saine', emoji: '🟢', color: '#10B981' }
                   : userPlant.health_score >= 50
                   ? { label: 'Attention', emoji: '🟡', color: '#F59E0B' }
-                  : { label: 'Critique', emoji: '🔴', color: '#EF4444' };
+                  : { label: 'Critique', emoji: '🔴', color: '#EF4444' }
+                : null;
 
               // Couleur de la barre de progression
-              const progressColor =
-                userPlant.health_score >= 80
+              const progressColor = hasDiagnosis
+                ? userPlant.health_score >= 80
                   ? '#10B981'
                   : userPlant.health_score >= 50
                   ? '#F59E0B'
-                  : '#EF4444';
+                  : '#EF4444'
+                : '#CFD186';
 
               // URL de la photo
               const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
@@ -213,30 +212,47 @@ export default function MyPlantsPage() {
                       </p>
                     )}
 
-                    {/* Barre de santé fine */}
-                    <div className="mb-2" style={{ height: '4px' }}>
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${userPlant.health_score}%`,
-                          backgroundColor: progressColor,
-                        }}
-                      />
-                    </div>
+                    {/* Barre de santé fine (seulement si diagnostiquée) */}
+                    {hasDiagnosis && (
+                      <div className="mb-2" style={{ height: '4px' }}>
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${userPlant.health_score}%`,
+                            backgroundColor: progressColor,
+                          }}
+                        />
+                      </div>
+                    )}
 
-                    {/* Badge santé pill */}
-                    <div className="inline-block">
-                      <span
-                        className="rounded-full px-3 py-1 text-xs font-semibold text-white"
-                        style={{
-                          backgroundColor: `${healthStatus.color}40`,
-                          color: healthStatus.color,
-                          border: `1px solid ${healthStatus.color}60`,
-                        }}
-                      >
-                        {healthStatus.emoji} {healthStatus.label}
-                      </span>
-                    </div>
+                    {/* Badge santé pill (seulement si diagnostiquée) */}
+                    {hasDiagnosis && healthStatus ? (
+                      <div className="inline-block">
+                        <span
+                          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+                          style={{
+                            backgroundColor: `${healthStatus.color}40`,
+                            color: healthStatus.color,
+                            border: `1px solid ${healthStatus.color}60`,
+                          }}
+                        >
+                          {healthStatus.emoji} {healthStatus.label}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="inline-block">
+                        <span
+                          className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+                          style={{
+                            backgroundColor: 'rgba(207, 209, 134, 0.4)',
+                            color: '#CFD186',
+                            border: '1px solid rgba(207, 209, 134, 0.6)',
+                          }}
+                        >
+                          🔬 Diagnostic à faire
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               );

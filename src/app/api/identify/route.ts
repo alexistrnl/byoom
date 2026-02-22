@@ -108,13 +108,14 @@ export async function POST(request: NextRequest) {
 
     if (isNewPlant) {
       // Créer une nouvelle user_plant
+      // Pas de health_score initial : il faut faire un diagnostic pour connaître l'état de santé
       userPlant = await pb.collection('user_plants').create({
         user: userId,
         plant: plant.id,
         nickname: identification.common_name,
         acquisition_date: new Date().toISOString(),
         photos: [],
-        health_score: 100,
+        health_score: 0, // 0 = pas encore diagnostiquée
         public_visible: true,
         points_earned: 0,
         streak_days: 0,

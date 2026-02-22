@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { calculateLevel } from '@/lib/gamification';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function DashboardPage() {
@@ -115,14 +116,7 @@ export default function DashboardPage() {
   };
 
   if (loading || contextLoading || !user) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center"
-        style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
-      >
-        <div style={{ color: '#52414C' }}>Chargement...</div>
-      </div>
-    );
+    return <LoadingSpinner message="Chargement de ton jardin..." />;
   }
 
   const pointsTotal = user.points_total || 0;

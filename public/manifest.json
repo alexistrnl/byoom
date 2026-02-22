@@ -4,8 +4,8 @@
   "description": "Identifie. Soigne. Collectionne. Votre Pokédex végétal intelligent.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F5F2EB",
-  "theme_color": "#2D5A27",
+  "background_color": "#F5F0E8",
+  "theme_color": "#5B8C5A",
   "orientation": "portrait",
   "icons": [
     {

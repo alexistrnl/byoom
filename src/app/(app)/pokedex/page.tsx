@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import PocketBase from 'pocketbase';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { Plant } from '@/lib/types/pocketbase';
 
 export default function PokedexPage() {
@@ -41,11 +42,7 @@ export default function PokedexPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg text-gray-600">Chargement...</div>
-      </div>
-    );
+    return <LoadingSpinner message="Chargement du Pokédex..." />;
   }
 
   return (

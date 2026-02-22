@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function PlantDetailPage() {
@@ -76,11 +77,7 @@ export default function PlantDetailPage() {
   };
 
   if (loading || contextLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center" style={{ backgroundColor: 'var(--color-cream)' }}>
-        <div className="text-lg" style={{ color: 'var(--color-night)' }}>Chargement...</div>
-      </div>
-    );
+    return <LoadingSpinner message="Chargement de la fiche..." />;
   }
 
   if (error || !userPlant) {
@@ -102,21 +99,26 @@ export default function PlantDetailPage() {
 
   const plant = userPlant.expand?.plant as unknown as Plant | undefined;
   
-  // Déterminer le statut de santé
-  const healthStatus =
-    userPlant.health_score >= 80
+  // Vérifier si la plante a déjà été diagnostiquée
+  const hasDiagnosis = userPlant.health_score > 0 || lastDiagnosis !== null;
+  
+  // Déterminer le statut de santé (seulement si diagnostiquée)
+  const healthStatus = hasDiagnosis
+    ? userPlant.health_score >= 80
       ? { label: 'Saine', emoji: '🟢', color: '#10B981', bgColor: 'rgba(16, 185, 129, 0.15)' }
       : userPlant.health_score >= 50
       ? { label: 'Attention', emoji: '🟡', color: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.15)' }
-      : { label: 'Critique', emoji: '🔴', color: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.15)' };
+      : { label: 'Critique', emoji: '🔴', color: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.15)' }
+    : null;
 
   // Couleur de la barre de progression selon le score
-  const progressColor =
-    userPlant.health_score >= 80
+  const progressColor = hasDiagnosis
+    ? userPlant.health_score >= 80
       ? '#10B981'
       : userPlant.health_score >= 50
       ? '#F59E0B'
-      : '#EF4444';
+      : '#EF4444'
+    : '#CFD186';
 
   // Fonction pour formater le texte (première lettre majuscule, reste en minuscules)
   const formatText = (text: string): string => {
@@ -282,41 +284,58 @@ export default function PlantDetailPage() {
 
           {/* Contenu en bas par-dessus le gradient */}
           <div className="absolute bottom-0 left-0 right-0 p-4">
-            {/* Badge statut santé */}
-            <div
-              className="mb-3 inline-block rounded-full px-3 py-1.5"
-              style={{
-                backgroundColor: healthStatus.bgColor,
-                color: healthStatus.color,
-              }}
-            >
-              <span className="text-xs font-semibold">
-                {healthStatus.emoji} {healthStatus.label}
-              </span>
-            </div>
-
-            {/* Score de santé et barre dans un bloc */}
-            <div
-              className="mb-3 rounded-xl"
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                padding: '0.75rem',
-              }}
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-white opacity-90">Score de santé</span>
-                <span className="text-sm font-semibold text-white">{userPlant.health_score}/100</span>
-              </div>
-              <div className="h-1 w-full rounded-full bg-white/20">
+            {hasDiagnosis ? (
+              <>
+                {/* Badge statut santé */}
                 <div
-                  className="h-1 rounded-full transition-all"
+                  className="mb-3 inline-block rounded-full px-3 py-1.5"
                   style={{
-                    width: `${userPlant.health_score}%`,
-                    backgroundColor: progressColor,
+                    backgroundColor: healthStatus?.bgColor,
+                    color: healthStatus?.color,
                   }}
-                />
+                >
+                  <span className="text-xs font-semibold">
+                    {healthStatus?.emoji} {healthStatus?.label}
+                  </span>
+                </div>
+
+                {/* Score de santé et barre dans un bloc */}
+                <div
+                  className="mb-3 rounded-xl"
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    padding: '0.75rem',
+                  }}
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-white opacity-90">Score de santé</span>
+                    <span className="text-sm font-semibold text-white">{userPlant.health_score}/100</span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-white/20">
+                    <div
+                      className="h-1 rounded-full transition-all"
+                      style={{
+                        width: `${userPlant.health_score}%`,
+                        backgroundColor: progressColor,
+                      }}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Message si pas encore diagnostiquée */
+              <div
+                className="mb-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  padding: '0.75rem',
+                }}
+              >
+                <p className="text-xs font-medium text-white opacity-90">
+                  🔬 Fais le premier diagnostic pour connaître l'état de santé de ta plante
+                </p>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -725,41 +744,58 @@ export default function PlantDetailPage() {
 
           {/* Contenu en bas par-dessus le gradient */}
           <div className="absolute bottom-0 left-0 right-0 p-6">
-            {/* Badge statut santé */}
-            <div
-              className="mb-4 inline-block rounded-full px-4 py-2"
-              style={{
-                backgroundColor: healthStatus.bgColor,
-                color: healthStatus.color,
-              }}
-            >
-              <span className="text-sm font-semibold">
-                {healthStatus.emoji} {healthStatus.label}
-              </span>
-            </div>
-
-            {/* Score de santé et barre dans un bloc */}
-            <div
-              className="mb-4 rounded-xl"
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                padding: '0.75rem',
-              }}
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-white opacity-90">Score de santé</span>
-                <span className="text-sm font-semibold text-white">{userPlant.health_score}/100</span>
-              </div>
-              <div className="h-1 w-full rounded-full bg-white/20">
+            {hasDiagnosis ? (
+              <>
+                {/* Badge statut santé */}
                 <div
-                  className="h-1 rounded-full transition-all"
+                  className="mb-4 inline-block rounded-full px-4 py-2"
                   style={{
-                    width: `${userPlant.health_score}%`,
-                    backgroundColor: progressColor,
+                    backgroundColor: healthStatus?.bgColor,
+                    color: healthStatus?.color,
                   }}
-                />
+                >
+                  <span className="text-sm font-semibold">
+                    {healthStatus?.emoji} {healthStatus?.label}
+                  </span>
+                </div>
+
+                {/* Score de santé et barre dans un bloc */}
+                <div
+                  className="mb-4 rounded-xl"
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    padding: '0.75rem',
+                  }}
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-white opacity-90">Score de santé</span>
+                    <span className="text-sm font-semibold text-white">{userPlant.health_score}/100</span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-white/20">
+                    <div
+                      className="h-1 rounded-full transition-all"
+                      style={{
+                        width: `${userPlant.health_score}%`,
+                        backgroundColor: progressColor,
+                      }}
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Message si pas encore diagnostiquée */
+              <div
+                className="mb-4 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  padding: '0.75rem',
+                }}
+              >
+                <p className="text-xs font-medium text-white opacity-90">
+                  🔬 Fais le premier diagnostic pour connaître l'état de santé de ta plante
+                </p>
               </div>
-            </div>
+            )}
 
             {/* Bouton Diagnostiquer */}
             <Link

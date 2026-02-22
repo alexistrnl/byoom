@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CameraCapture } from '@/components/camera/CameraCapture';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function DiagnosePage() {
@@ -23,7 +23,6 @@ export default function DiagnosePage() {
   const [error, setError] = useState('');
   const [checkedActions, setCheckedActions] = useState<Set<number>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
-  const [showCamera, setShowCamera] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -110,13 +109,6 @@ export default function DiagnosePage() {
     } catch (error) {
       console.error('Erreur lors du chargement des plantes:', error);
     }
-  };
-
-  const handleCapture = (file: File) => {
-    setImage(file);
-    setImagePreview(URL.createObjectURL(file));
-    setResult(null);
-    setError('');
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,14 +234,7 @@ export default function DiagnosePage() {
   };
 
   if (loading || contextLoading) {
-    return (
-      <div
-        className="flex min-h-screen items-center justify-center"
-        style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
-      >
-        <div style={{ color: '#52414C' }}>Chargement...</div>
-      </div>
-    );
+    return <LoadingSpinner message="Préparation du diagnostic..." />;
   }
 
   if (!userPlant && plantIdParam) {
@@ -297,7 +282,7 @@ export default function DiagnosePage() {
                 Comment va ta plante ?
               </h1>
               <p className="text-base" style={{ color: '#6B7280' }}>
-                Prends une photo et l'IA analyse sa santé en quelques secondes
+                Upload une photo et l'IA analyse sa santé en quelques secondes
               </p>
             </div>
 
@@ -410,44 +395,21 @@ export default function DiagnosePage() {
                       Glisse ta photo ici
                     </h2>
                     <p className="mb-6 text-sm" style={{ color: '#6B7280' }}>
-                      ou choisis une option
+                      ou choisis un fichier
                     </p>
 
-                    {/* Deux boutons côte à côte */}
-                    <div className="flex gap-4">
-                      {showCamera ? (
-                        <div className="w-full">
-                          <CameraCapture
-                            onCapture={(file) => {
-                              handleCapture(file);
-                              setShowCamera(false);
-                            }}
-                            label="📷 Prendre une photo"
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => setShowCamera(true)}
-                            className="rounded-full px-8 py-4 font-semibold text-white transition-all hover:scale-105"
-                            style={{ backgroundColor: '#5B8C5A' }}
-                          >
-                            📷 Prendre une photo
-                          </button>
-                          <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="rounded-full border-2 px-8 py-4 font-semibold transition-all hover:scale-105"
-                            style={{
-                              backgroundColor: 'white',
-                              borderColor: '#5B8C5A',
-                              color: '#5B8C5A',
-                            }}
-                          >
-                            📁 Choisir un fichier
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    {/* Bouton unique pour choisir un fichier */}
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="rounded-full border-2 px-8 py-4 font-semibold transition-all hover:scale-105"
+                      style={{
+                        backgroundColor: 'white',
+                        borderColor: '#5B8C5A',
+                        color: '#5B8C5A',
+                      }}
+                    >
+                      📁 Choisir un fichier
+                    </button>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -514,213 +476,292 @@ export default function DiagnosePage() {
             )}
           </div>
         ) : (
-          /* ÉTAT APRÈS (résultats) */
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[40%_60%]">
-            {/* COLONNE GAUCHE (40%) */}
-            <div>
-              {/* Photo uploadée */}
-              {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Plante diagnostiquée"
-                  className="mb-6 w-full rounded-3xl object-cover shadow-lg"
-                  style={{ maxHeight: '300px' }}
-                />
-              )}
-
-              {/* Cercle SVG de progression animé */}
-              <div className="relative flex items-center justify-center">
-                <svg className="h-48 w-48 -rotate-90 transform" viewBox="0 0 100 100">
-                  {/* Cercle de fond */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    fill="none"
-                    stroke="#E5E5E5"
-                    strokeWidth="8"
-                  />
-                  {/* Cercle de progression animé */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    fill="none"
-                    stroke={getHealthColor(result.diagnosis.health_score)}
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - result.diagnosis.health_score / 100)}`}
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
-                {/* Score au centre */}
-                <div className="absolute text-center">
-                  <div
-                    className="text-5xl font-bold"
-                    style={{ color: getHealthColor(result.diagnosis.health_score) }}
-                  >
-                    {result.diagnosis.health_score}
-                  </div>
-                  <div className="text-sm" style={{ color: '#596157' }}>
-                    /100
-                  </div>
-                </div>
+          /* ÉTAT APRÈS (résultats) - Design premium */
+          <div className="mx-auto max-w-6xl">
+            {/* HEADER avec badge XP */}
+            <div className="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+              <div>
+                <h2
+                  className="mb-2 font-serif text-3xl font-bold"
+                  style={{ color: '#52414C' }}
+                >
+                  Diagnostic terminé
+                </h2>
+                {plant && (
+                  <p className="text-base italic" style={{ color: '#596157' }}>
+                    {userPlant?.nickname || plant.common_name}
+                  </p>
+                )}
               </div>
-
-              {/* Label statut */}
-              <div className="mt-4 text-center">
-                <span
-                  className="rounded-full px-4 py-2 text-sm font-bold uppercase"
+              {result.xpAwarded > 0 && (
+                <div
+                  className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold"
                   style={{
-                    backgroundColor: `${getHealthColor(result.diagnosis.health_score)}30`,
-                    color: getHealthColor(result.diagnosis.health_score),
+                    backgroundColor: 'rgba(207, 209, 134, 0.2)',
+                    color: '#52414C',
+                    border: '2px solid #CFD186',
+                    animation: 'fadeInUp 0.5s ease-out',
                   }}
                 >
-                  {getStatusLabel(result.diagnosis.overall_status)}
-                </span>
-              </div>
-            </div>
-
-            {/* COLONNE DROITE (60%) */}
-            <div>
-              <h2
-                className="mb-6 font-serif text-3xl font-bold"
-                style={{ color: '#52414C' }}
-              >
-                Diagnostic
-                {plant && (
-                  <span className="block text-xl font-normal" style={{ color: '#596157' }}>
-                    {userPlant?.nickname || plant.common_name}
-                  </span>
-                )}
-              </h2>
-
-              {/* Problèmes détectés */}
-              {result.diagnosis.issues && result.diagnosis.issues.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="mb-4 text-lg font-bold" style={{ color: '#52414C' }}>
-                    Problèmes détectés
-                  </h3>
-                  <div className="space-y-3">
-                    {result.diagnosis.issues.map((issue: any, idx: number) => {
-                      const severityColor = getSeverityColor(issue.severity);
-                      const severityEmoji = getSeverityEmoji(issue.severity);
-                      return (
-                        <div
-                          key={idx}
-                          className="rounded-xl bg-white p-4 shadow-sm"
-                          style={{ borderLeft: `4px solid ${severityColor}` }}
-                        >
-                          <div className="mb-2 flex items-center gap-2">
-                            <span className="text-xl">{severityEmoji}</span>
-                            <span className="font-bold" style={{ color: '#52414C' }}>
-                              {issue.type}
-                            </span>
-                          </div>
-                          <p className="mb-3 text-sm" style={{ color: '#596157' }}>
-                            {issue.description}
-                          </p>
-                          <div className="text-sm" style={{ color: '#5B8C5A' }}>
-                            <span className="font-semibold">💡 Solution :</span> {issue.solution}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <span className="text-lg">⚡</span>
+                  <span>+{result.xpAwarded} XP gagnés !</span>
                 </div>
               )}
+            </div>
 
-              {/* Actions immédiates */}
-              {result.diagnosis.immediate_actions &&
-                result.diagnosis.immediate_actions.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="mb-4 text-lg font-bold" style={{ color: '#52414C' }}>
-                      Actions immédiates
+            {/* LAYOUT PRINCIPAL - Deux colonnes */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[45%_55%]">
+              {/* COLONNE GAUCHE - Score et photo */}
+              <div className="space-y-6">
+                {/* Photo uploadée */}
+                {imagePreview && (
+                  <div className="overflow-hidden rounded-3xl shadow-xl">
+                    <img
+                      src={imagePreview}
+                      alt="Plante diagnostiquée"
+                      className="h-auto w-full object-cover"
+                      style={{ maxHeight: '400px' }}
+                    />
+                  </div>
+                )}
+
+                {/* Card Score de santé */}
+                <div
+                  className="rounded-3xl p-8 text-center"
+                  style={{
+                    backgroundColor: 'white',
+                    boxShadow: '0 8px 40px rgba(82, 65, 76, 0.08)',
+                  }}
+                >
+                  {/* Cercle SVG de progression animé */}
+                  <div className="relative mx-auto mb-6" style={{ width: '200px', height: '200px' }}>
+                    <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
+                      {/* Cercle de fond */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="42"
+                        fill="none"
+                        stroke="#F5F0E8"
+                        strokeWidth="6"
+                      />
+                      {/* Cercle de progression animé */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="42"
+                        fill="none"
+                        stroke={getHealthColor(result.diagnosis.health_score)}
+                        strokeWidth="6"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 42}`}
+                        strokeDashoffset={`${2 * Math.PI * 42 * (1 - result.diagnosis.health_score / 100)}`}
+                        className="transition-all duration-1000 ease-out"
+                      />
+                    </svg>
+                    {/* Score au centre */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div
+                        className="text-6xl font-bold"
+                        style={{ color: getHealthColor(result.diagnosis.health_score) }}
+                      >
+                        {result.diagnosis.health_score}
+                      </div>
+                      <div className="text-base font-medium" style={{ color: '#596157' }}>
+                        /100
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Label statut avec emoji */}
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-2xl">
+                      {result.diagnosis.health_score >= 80
+                        ? '🟢'
+                        : result.diagnosis.health_score >= 50
+                        ? '🟡'
+                        : '🔴'}
+                    </span>
+                    <span
+                      className="rounded-full px-5 py-2 text-sm font-bold uppercase tracking-wider"
+                      style={{
+                        backgroundColor: `${getHealthColor(result.diagnosis.health_score)}20`,
+                        color: getHealthColor(result.diagnosis.health_score),
+                        border: `2px solid ${getHealthColor(result.diagnosis.health_score)}40`,
+                      }}
+                    >
+                      {getStatusLabel(result.diagnosis.overall_status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* COLONNE DROITE - Détails du diagnostic */}
+              <div className="space-y-6">
+                {/* Message positif si pas de problèmes */}
+                {(!result.diagnosis.issues || result.diagnosis.issues.length === 0) && (
+                  <div
+                    className="rounded-3xl p-8 text-center"
+                    style={{
+                      backgroundColor: 'white',
+                      boxShadow: '0 8px 40px rgba(82, 65, 76, 0.08)',
+                    }}
+                  >
+                    <div className="mb-4 text-6xl">🌿</div>
+                    <h3
+                      className="mb-3 font-serif text-2xl font-bold"
+                      style={{ color: '#52414C' }}
+                    >
+                      Ta plante est en excellente santé !
                     </h3>
-                    <div className="space-y-2">
-                      {result.diagnosis.immediate_actions.map((action: string, idx: number) => (
-                        <label
-                          key={idx}
-                          className="flex cursor-pointer items-center gap-3 rounded-lg bg-white p-3 shadow-sm transition-colors hover:bg-gray-50"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checkedActions.has(idx)}
-                            onChange={() => toggleAction(idx)}
-                            className="h-5 w-5 rounded border-2"
+                    <p className="text-base leading-relaxed" style={{ color: '#596157' }}>
+                      Aucun problème détecté. Continue à prendre soin de ta plante comme tu le fais
+                      actuellement.
+                    </p>
+                  </div>
+                )}
+
+                {/* Problèmes détectés */}
+                {result.diagnosis.issues && result.diagnosis.issues.length > 0 && (
+                  <div
+                    className="rounded-3xl p-6"
+                    style={{
+                      backgroundColor: 'white',
+                      boxShadow: '0 8px 40px rgba(82, 65, 76, 0.08)',
+                    }}
+                  >
+                    <h3
+                      className="mb-5 flex items-center gap-2 font-serif text-xl font-bold"
+                      style={{ color: '#52414C' }}
+                    >
+                      <span>🔍</span>
+                      Problèmes détectés
+                    </h3>
+                    <div className="space-y-4">
+                      {result.diagnosis.issues.map((issue: any, idx: number) => {
+                        const severityColor = getSeverityColor(issue.severity);
+                        const severityEmoji = getSeverityEmoji(issue.severity);
+                        return (
+                          <div
+                            key={idx}
+                            className="rounded-2xl p-4"
                             style={{
-                              accentColor: '#5B8C5A',
+                              backgroundColor: '#F5F0E8',
+                              borderLeft: `4px solid ${severityColor}`,
                             }}
-                          />
-                          <span className="text-sm" style={{ color: '#52414C' }}>
-                            {action}
-                          </span>
-                        </label>
-                      ))}
+                          >
+                            <div className="mb-3 flex items-center gap-3">
+                              <span className="text-2xl">{severityEmoji}</span>
+                              <span className="font-bold" style={{ color: '#52414C' }}>
+                                {issue.type}
+                              </span>
+                            </div>
+                            <p className="mb-3 text-sm leading-relaxed" style={{ color: '#596157' }}>
+                              {issue.description}
+                            </p>
+                            <div
+                              className="rounded-xl p-3 text-sm"
+                              style={{
+                                backgroundColor: 'white',
+                                border: `1px solid ${severityColor}30`,
+                              }}
+                            >
+                              <span className="font-semibold" style={{ color: '#5B8C5A' }}>
+                                💡 Solution :
+                              </span>{' '}
+                              <span style={{ color: '#52414C' }}>{issue.solution}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
-              {/* Badge XP animé */}
-              {result.xpAwarded > 0 && (
-                <div
-                  className="mb-6 animate-fade-in-up rounded-full px-4 py-2 text-center text-sm font-semibold"
-                  style={{
-                    backgroundColor: '#CFD186',
-                    color: '#52414C',
-                    animation: 'fadeInUp 0.5s ease-out',
-                  }}
-                >
-                  ⚡ +{result.xpAwarded} XP gagnés !
-                </div>
-              )}
+                {/* Actions immédiates */}
+                {result.diagnosis.immediate_actions &&
+                  result.diagnosis.immediate_actions.length > 0 && (
+                    <div
+                      className="rounded-3xl p-6"
+                      style={{
+                        backgroundColor: 'white',
+                        boxShadow: '0 8px 40px rgba(82, 65, 76, 0.08)',
+                      }}
+                    >
+                      <h3
+                        className="mb-5 flex items-center gap-2 font-serif text-xl font-bold"
+                        style={{ color: '#52414C' }}
+                      >
+                        <span>✅</span>
+                        Actions immédiates
+                      </h3>
+                      <div className="space-y-3">
+                        {result.diagnosis.immediate_actions.map((action: string, idx: number) => (
+                          <label
+                            key={idx}
+                            className="flex cursor-pointer items-center gap-4 rounded-xl p-4 transition-all hover:scale-[1.02]"
+                            style={{
+                              backgroundColor: checkedActions.has(idx) ? '#F5F0E8' : 'white',
+                              border: `2px solid ${checkedActions.has(idx) ? '#5B8C5A' : '#E5E5E5'}`,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checkedActions.has(idx)}
+                              onChange={() => toggleAction(idx)}
+                              className="h-5 w-5 rounded border-2"
+                              style={{
+                                accentColor: '#5B8C5A',
+                              }}
+                            />
+                            <span className="flex-1 text-sm" style={{ color: '#52414C' }}>
+                              {action}
+                            </span>
+                            {checkedActions.has(idx) && (
+                              <span className="text-lg">✓</span>
+                            )}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Bouton retour */}
-              {(() => {
-                const plantId = plantIdParam || selectedPlantId;
-                if (plantId && plantId !== 'null') {
-                  return (
-                    <Link
-                      href={`/my-plants/${plantId}`}
-                      className="block w-full rounded-full px-6 py-3 text-center font-semibold text-white transition-all hover:scale-105"
-                      style={{ backgroundColor: '#5B8C5A' }}
-                    >
-                      Retour à ma plante
-                    </Link>
-                  );
-                } else {
-                  return (
-                    <Link
-                      href="/my-plants"
-                      className="block w-full rounded-full px-6 py-3 text-center font-semibold text-white transition-all hover:scale-105"
-                      style={{ backgroundColor: '#5B8C5A' }}
-                    >
-                      Retour à mes plantes
-                    </Link>
-                  );
-                }
-              })()}
+                {/* Bouton retour */}
+                {(() => {
+                  const plantId = plantIdParam || selectedPlantId;
+                  if (plantId && plantId !== 'null') {
+                    return (
+                      <Link
+                        href={`/my-plants/${plantId}`}
+                        className="block w-full rounded-full px-6 py-4 text-center text-base font-semibold text-white transition-all hover:scale-105"
+                        style={{
+                          backgroundColor: '#5B8C5A',
+                          boxShadow: '0 4px 15px rgba(91, 140, 90, 0.3)',
+                        }}
+                      >
+                        ← Retour à ma plante
+                      </Link>
+                    );
+                  } else {
+                    return (
+                      <Link
+                        href="/my-plants"
+                        className="block w-full rounded-full px-6 py-4 text-center text-base font-semibold text-white transition-all hover:scale-105"
+                        style={{
+                          backgroundColor: '#5B8C5A',
+                          boxShadow: '0 4px 15px rgba(91, 140, 90, 0.3)',
+                        }}
+                      >
+                        ← Retour à mes plantes
+                      </Link>
+                    );
+                  }
+                })()}
+              </div>
             </div>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.5s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
