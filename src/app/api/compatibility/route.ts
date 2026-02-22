@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
 
       // Tester la compatibilité avec l'IA
       const result = await checkCompatibility(
-        plantA as Plant,
-        plantB as Plant
+        plantA as unknown as Plant,
+        plantB as unknown as Plant
       );
 
       // Créer l'enregistrement de compatibilité
