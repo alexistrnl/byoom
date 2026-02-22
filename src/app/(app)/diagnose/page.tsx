@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
+import { processImageForUpload, isImageFile, isFileTooLarge } from '@/lib/imageUtils';
 
 export default function DiagnosePage() {
   const { pb, user: contextUser, loading: contextLoading } = usePocketBase();
@@ -19,6 +20,7 @@ export default function DiagnosePage() {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [processingImage, setProcessingImage] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [checkedActions, setCheckedActions] = useState<Set<number>>(new Set());
@@ -111,45 +113,79 @@ export default function DiagnosePage() {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setImage(file);
-      setResult(null);
-      setError('');
+    if (!file) return;
+    
+    // Vérifier que c'est une image
+    if (!isImageFile(file)) {
+      setError('Veuillez sélectionner un fichier image valide (JPEG, PNG, HEIC, etc.)');
+      return;
+    }
+    
+    // Vérifier la taille (max 10MB avant traitement)
+    if (isFileTooLarge(file, 10)) {
+      setError('L\'image est trop volumineuse (max 10MB). Veuillez choisir une image plus petite.');
+      return;
+    }
+    
+    setResult(null);
+    setError('');
+    setProcessingImage(true);
+    
+    try {
+      // Traiter l'image : compression, redimensionnement, correction orientation
+      const processed = await processImageForUpload(file, 1920, 1920, 0.85, 5);
       
-      // Utiliser FileReader pour convertir en base64 (persistant sur iOS)
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
-      };
-      reader.onerror = () => {
-        setError('Erreur lors de la lecture de l\'image');
-      };
-      reader.readAsDataURL(file);
+      // Mettre à jour le state avec l'image traitée
+      setImage(processed.file);
+      setImagePreview(processed.preview);
+      
+      console.log(`Image traitée: ${(processed.originalSize / 1024 / 1024).toFixed(2)}MB → ${(processed.processedSize / 1024 / 1024).toFixed(2)}MB`);
+    } catch (err: any) {
+      console.error('Erreur lors du traitement de l\'image:', err);
+      setError(err.message || 'Erreur lors du traitement de l\'image. Veuillez réessayer.');
+    } finally {
+      setProcessingImage(false);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImage(file);
-      setResult(null);
-      setError('');
+    if (!file) return;
+    
+    // Vérifier que c'est une image
+    if (!isImageFile(file)) {
+      setError('Veuillez sélectionner un fichier image valide (JPEG, PNG, HEIC, etc.)');
+      return;
+    }
+    
+    // Vérifier la taille (max 10MB avant traitement)
+    if (isFileTooLarge(file, 10)) {
+      setError('L\'image est trop volumineuse (max 10MB). Veuillez choisir une image plus petite.');
+      return;
+    }
+    
+    setResult(null);
+    setError('');
+    setProcessingImage(true);
+    
+    try {
+      // Traiter l'image : compression, redimensionnement, correction orientation
+      const processed = await processImageForUpload(file, 1920, 1920, 0.85, 5);
       
-      // Utiliser FileReader pour convertir en base64 (persistant sur iOS)
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
-      };
-      reader.onerror = () => {
-        setError('Erreur lors de la lecture de l\'image');
-      };
-      reader.readAsDataURL(file);
+      // Mettre à jour le state avec l'image traitée
+      setImage(processed.file);
+      setImagePreview(processed.preview);
+      
+      console.log(`Image traitée: ${(processed.originalSize / 1024 / 1024).toFixed(2)}MB → ${(processed.processedSize / 1024 / 1024).toFixed(2)}MB`);
+    } catch (err: any) {
+      console.error('Erreur lors du traitement de l\'image:', err);
+      setError(err.message || 'Erreur lors du traitement de l\'image. Veuillez réessayer.');
+    } finally {
+      setProcessingImage(false);
     }
   };
 
@@ -399,7 +435,16 @@ export default function DiagnosePage() {
                   </div>
                 )}
 
-                {!imagePreview ? (
+                {processingImage ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div
+                      className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#5B8C5A] border-t-transparent"
+                    />
+                    <p className="text-sm font-medium" style={{ color: '#52414C' }}>
+                      Traitement de l'image...
+                    </p>
+                  </div>
+                ) : !imagePreview ? (
                   <>
                     {/* Grand cercle vert avec icône */}
                     <div
@@ -433,7 +478,7 @@ export default function DiagnosePage() {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*"
+                      accept="image/*,image/heic,image/heif"
                       onChange={handleFileSelect}
                       className="hidden"
                     />

@@ -27,9 +27,14 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Convertir toute image en JPEG avec sharp pour garantir la compatibilité
+    // Sharp supporte automatiquement HEIC/HEIF, PNG, WebP, etc.
     let jpegBuffer: Buffer;
     try {
-      jpegBuffer = await sharp(buffer).jpeg({ quality: 90 }).toBuffer();
+      // Utiliser rotate() pour corriger l'orientation EXIF automatiquement
+      jpegBuffer = await sharp(buffer)
+        .rotate() // Corrige automatiquement l'orientation EXIF
+        .jpeg({ quality: 90, mozjpeg: true })
+        .toBuffer();
       console.log('Image convertie en JPEG avec sharp');
     } catch (error) {
       console.error('Erreur lors de la conversion avec sharp, utilisation du buffer original:', error);

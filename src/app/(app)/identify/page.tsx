@@ -6,6 +6,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPocketBaseClient } from '@/lib/pocketbase';
+import { processImageForUpload, isImageFile, isFileTooLarge } from '@/lib/imageUtils';
 
 export default function IdentifyPage() {
   const [image, setImage] = useState<File | null>(null);
@@ -17,45 +18,79 @@ export default function IdentifyPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setImage(file);
-      setResult(null);
-      setError('');
+    if (!file) return;
+    
+    // Vérifier que c'est une image
+    if (!isImageFile(file)) {
+      setError('Veuillez sélectionner un fichier image valide (JPEG, PNG, HEIC, etc.)');
+      return;
+    }
+    
+    // Vérifier la taille (max 10MB avant traitement)
+    if (isFileTooLarge(file, 10)) {
+      setError('L\'image est trop volumineuse (max 10MB). Veuillez choisir une image plus petite.');
+      return;
+    }
+    
+    setResult(null);
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Traiter l'image : compression, redimensionnement, correction orientation
+      const processed = await processImageForUpload(file, 1920, 1920, 0.85, 5);
       
-      // Utiliser FileReader pour convertir en base64 (persistant sur iOS)
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
-      };
-      reader.onerror = () => {
-        setError('Erreur lors de la lecture de l\'image');
-      };
-      reader.readAsDataURL(file);
+      // Mettre à jour le state avec l'image traitée
+      setImage(processed.file);
+      setImagePreview(processed.preview);
+      
+      console.log(`Image traitée: ${(processed.originalSize / 1024 / 1024).toFixed(2)}MB → ${(processed.processedSize / 1024 / 1024).toFixed(2)}MB`);
+    } catch (err: any) {
+      console.error('Erreur lors du traitement de l\'image:', err);
+      setError(err.message || 'Erreur lors du traitement de l\'image. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setImage(file);
-      setResult(null);
-      setError('');
+    if (!file) return;
+    
+    // Vérifier que c'est une image
+    if (!isImageFile(file)) {
+      setError('Veuillez sélectionner un fichier image valide (JPEG, PNG, HEIC, etc.)');
+      return;
+    }
+    
+    // Vérifier la taille (max 10MB avant traitement)
+    if (isFileTooLarge(file, 10)) {
+      setError('L\'image est trop volumineuse (max 10MB). Veuillez choisir une image plus petite.');
+      return;
+    }
+    
+    setResult(null);
+    setError('');
+    setLoading(true);
+    
+    try {
+      // Traiter l'image : compression, redimensionnement, correction orientation
+      const processed = await processImageForUpload(file, 1920, 1920, 0.85, 5);
       
-      // Utiliser FileReader pour convertir en base64 (persistant sur iOS)
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImagePreview(base64);
-      };
-      reader.onerror = () => {
-        setError('Erreur lors de la lecture de l\'image');
-      };
-      reader.readAsDataURL(file);
+      // Mettre à jour le state avec l'image traitée
+      setImage(processed.file);
+      setImagePreview(processed.preview);
+      
+      console.log(`Image traitée: ${(processed.originalSize / 1024 / 1024).toFixed(2)}MB → ${(processed.processedSize / 1024 / 1024).toFixed(2)}MB`);
+    } catch (err: any) {
+      console.error('Erreur lors du traitement de l\'image:', err);
+      setError(err.message || 'Erreur lors du traitement de l\'image. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -180,7 +215,7 @@ export default function IdentifyPage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,image/heic,image/heif"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
