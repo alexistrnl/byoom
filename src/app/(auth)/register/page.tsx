@@ -39,10 +39,15 @@ export default function RegisterPage() {
 
       // Se connecter automatiquement après l'inscription
       await pb.collection('users').authWithPassword(email, password);
-      router.push('/dashboard');
+      
+      // Attendre un peu pour que le contexte PocketBase détecte l'auth
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Utiliser window.location.href pour forcer un rechargement complet
+      // Cela garantit que le contexte PocketBase sera réinitialisé avec la nouvelle auth
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message || 'Erreur lors de l\'inscription');
-    } finally {
       setLoading(false);
     }
   };
