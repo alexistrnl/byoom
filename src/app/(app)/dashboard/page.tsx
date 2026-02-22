@@ -333,7 +333,7 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-3">
               {userPlants.map((userPlant) => {
-                const plant = userPlant.expand?.plant as Plant | undefined;
+                const plant = userPlant.expand?.plant as unknown as Plant | undefined;
                 const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
                 const photoUrl = userPlant.photos?.[0]
                   ? `${pbUrl}/api/files/user_plants/${userPlant.id}/${userPlant.photos[0]}`

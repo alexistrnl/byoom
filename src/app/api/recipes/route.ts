@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Générer de nouvelles recettes
-    const recipes = await generateRecipes(plant as Plant);
+    const recipes = await generateRecipes(plant as unknown as Plant);
 
     // Mettre à jour la plante avec les recettes
     await pb.plants().update(plantId, {

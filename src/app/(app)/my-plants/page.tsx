@@ -119,7 +119,7 @@ export default function MyPlantsPage() {
           /* GRILLE DE PLANTES */
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" style={{ gap: '1.5rem' }}>
             {userPlants.map((userPlant) => {
-              const plant = userPlant.expand?.plant as Plant | undefined;
+              const plant = userPlant.expand?.plant as unknown as Plant | undefined;
               
               // Déterminer le statut de santé
               const healthStatus =

@@ -98,7 +98,7 @@ export default function PlantDetailPage() {
     );
   }
 
-  const plant = userPlant.expand?.plant as Plant | undefined;
+  const plant = userPlant.expand?.plant as unknown as Plant | undefined;
   
   // Déterminer le statut de santé
   const healthStatus =

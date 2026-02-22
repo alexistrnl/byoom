@@ -271,7 +271,7 @@ export default function DiagnosePage() {
     );
   }
 
-  const plant = userPlant?.expand?.plant as Plant | undefined;
+  const plant = userPlant?.expand?.plant as unknown as Plant | undefined;
 
   return (
     <div
@@ -318,7 +318,7 @@ export default function DiagnosePage() {
                 >
                   <option value="">-- Sélectionner une plante --</option>
                   {userPlants.map((up) => {
-                    const p = up.expand?.plant as Plant | undefined;
+                    const p = up.expand?.plant as unknown as Plant | undefined;
                     return (
                       <option key={up.id} value={up.id}>
                         {up.nickname || p?.common_name || 'Sans nom'}
