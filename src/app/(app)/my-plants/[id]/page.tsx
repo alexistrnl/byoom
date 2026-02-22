@@ -714,7 +714,7 @@ export default function PlantDetailPage() {
           </div>
 
           {/* Indicateur toxicité/comestibilité */}
-          <div>
+          <div className="mb-6">
             {plant?.toxic_to_pets && (
               <div
                 className="inline-block rounded-full px-3 py-1.5 text-xs font-medium"
@@ -735,6 +735,53 @@ export default function PlantDetailPage() {
                 }}
               >
                 🍃 Comestible
+              </div>
+            )}
+          </div>
+
+          {/* Bouton de suppression - Mobile */}
+          <div className="border-t pt-6" style={{ borderColor: 'rgba(0, 0, 0, 0.08)' }}>
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
+                style={{
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  color: '#DC2626',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                }}
+              >
+                🗑️ Retirer de mon jardin
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-center text-sm" style={{ color: '#596157' }}>
+                  Êtes-vous sûr de vouloir retirer cette plante de votre jardin ?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                    className="flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                    style={{
+                      backgroundColor: '#F5F0E8',
+                      color: '#52414C',
+                      border: '1px solid rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex-1 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                    style={{
+                      backgroundColor: '#DC2626',
+                    }}
+                  >
+                    {deleting ? 'Suppression...' : 'Confirmer'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
