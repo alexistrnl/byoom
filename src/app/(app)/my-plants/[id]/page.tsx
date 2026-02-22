@@ -18,6 +18,8 @@ export default function PlantDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastDiagnosis, setLastDiagnosis] = useState<any>(null);
   const [diagOpen, setDiagOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const id = params?.id as string;
 
@@ -73,6 +75,30 @@ export default function PlantDetailPage() {
       console.error('Erreur lors du chargement de la plante:', error);
       setError(error.message || 'Erreur lors du chargement de la plante');
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!userPlant || !id) return;
+
+    setDeleting(true);
+    try {
+      const authData = pb.authStore.model;
+      if (!authData) {
+        router.push('/login');
+        return;
+      }
+
+      // Supprimer la plante de la collection user_plants
+      await pb.collection('user_plants').delete(id, { requestKey: null });
+
+      // Rediriger vers la page "Mes plantes"
+      router.push('/my-plants');
+    } catch (error: any) {
+      console.error('Erreur lors de la suppression:', error);
+      setError('Erreur lors de la suppression de la plante');
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -1177,6 +1203,53 @@ export default function PlantDetailPage() {
               }}
             >
               🍃 Comestible
+            </div>
+          )}
+        </div>
+
+        {/* Bouton de suppression */}
+        <div className="mt-8 border-t pt-6" style={{ borderColor: 'rgba(0, 0, 0, 0.08)' }}>
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
+              style={{
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                color: '#DC2626',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+              }}
+            >
+              🗑️ Retirer de mon jardin
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-center text-sm" style={{ color: '#596157' }}>
+                Êtes-vous sûr de vouloir retirer cette plante de votre jardin ?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                  style={{
+                    backgroundColor: '#F5F0E8',
+                    color: '#52414C',
+                    border: '1px solid rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+                  style={{
+                    backgroundColor: '#DC2626',
+                  }}
+                >
+                  {deleting ? 'Suppression...' : 'Confirmer'}
+                </button>
+              </div>
             </div>
           )}
         </div>

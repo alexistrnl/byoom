@@ -94,12 +94,24 @@ EXIGENCES ABSOLUES pour care_tips :
   - Fréquence de rempotage en années
   - Signe qu'il faut rempoter
 
-"temperature": DOIT contenir :
-  - Température minimale absolue (mort de la plante en dessous)
-  - Température idéale jour ET nuit
-  - Température maximale tolérée
-  - Sensibilité aux courants d'air (oui/non + pourquoi)
-  - Sensibilité aux radiateurs/climatisation
+"temperature": RÈGLE CRITIQUE - Ne JAMAIS écrire "15-25°C" (c'est la valeur générique par défaut interdite).
+
+Tu dois rechercher les valeurs RÉELLES de cette espèce précise :
+
+- Température minimale absolue : température en dessous de laquelle la plante MEURT (ex: Sansevieria → 10°C, Orchidée Phalaenopsis → 15°C, Cactus désertique → -5°C possible)
+- Température idéale de croissance : plage optimale réelle (ex: Monstera → 18-27°C, Cactus → 21-35°C, Fougère → 16-21°C)
+- Température nocturne idéale : beaucoup d'espèces ont besoin d'un écart jour/nuit (ex: Orchidées → écart de 8-10°C nécessaire pour fleurir)
+- Température maximale tolérée avant stress thermique
+- Sensibilité spécifique : courants d'air froids (oui/non), gel (résistant/sensible/très sensible), proximité radiateur (dangereux/acceptable)
+
+Exemples de bonnes réponses temperature :
+- Sansevieria : "Min absolue : 10°C (dommages foliaires en dessous). Idéale : 18-27°C. Max tolérée : 35°C à l'ombre. Sensible aux courants d'air froids, éviter les fenêtres mal isolées en hiver. Tolère bien la chaleur sèche des radiateurs."
+
+- Phalaenopsis : "Min absolue : 15°C. Idéale jour : 22-28°C, nuit : 16-18°C (écart de 8°C nécessaire pour induire la floraison). Max : 30°C avec bonne humidité. Jamais près d'un radiateur direct, ni d'une climatisation."
+
+- Cactus Mammillaria : "Résiste jusqu'à -5°C si substrat SEC (humidité + gel = fatal). Idéale été : 21-35°C. Hiver : 8-15°C recommandé pour favoriser la floraison. Supporte très bien la chaleur et l'air sec des radiateurs."
+
+INTERDICTION ABSOLUE : ne jamais écrire une plage générique identique pour des espèces différentes. Chaque espèce a ses propres tolérances thermiques issues de son habitat naturel d'origine.
 
 "humidity": DOIT contenir :
   - Taux d'humidité idéal en % (chiffre précis)
