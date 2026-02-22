@@ -113,11 +113,21 @@ export default function DiagnosePage() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && file.type.startsWith('image/')) {
       setImage(file);
-      setImagePreview(URL.createObjectURL(file));
       setResult(null);
       setError('');
+      
+      // Utiliser FileReader pour convertir en base64 (persistant sur iOS)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setImagePreview(base64);
+      };
+      reader.onerror = () => {
+        setError('Erreur lors de la lecture de l\'image');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -127,9 +137,19 @@ export default function DiagnosePage() {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
       setImage(file);
-      setImagePreview(URL.createObjectURL(file));
       setResult(null);
       setError('');
+      
+      // Utiliser FileReader pour convertir en base64 (persistant sur iOS)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setImagePreview(base64);
+      };
+      reader.onerror = () => {
+        setError('Erreur lors de la lecture de l\'image');
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -414,6 +434,7 @@ export default function DiagnosePage() {
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
+                      capture="environment"
                       onChange={handleFileSelect}
                       className="hidden"
                     />

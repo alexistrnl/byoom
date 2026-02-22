@@ -338,10 +338,10 @@ export default function DashboardPage() {
                 const healthColor = getHealthColor(userPlant.health_score || 0);
                 const healthStatus =
                   userPlant.health_score >= 80
-                    ? { label: 'Saine', emoji: '🟢' }
+                    ? { label: 'Saine' }
                     : userPlant.health_score >= 50
-                    ? { label: 'Attention', emoji: '🟡' }
-                    : { label: 'Critique', emoji: '🔴' };
+                    ? { label: 'Attention' }
+                    : { label: 'Critique' };
 
                 return (
                   <Link
@@ -385,9 +385,10 @@ export default function DashboardPage() {
                       style={{
                         backgroundColor: `${healthColor}30`,
                         color: healthColor,
+                        border: `1px solid ${healthColor}60`,
                       }}
                     >
-                      {healthStatus.emoji} {healthStatus.label}
+                      {healthStatus.label}
                     </div>
 
                     {/* Flèche */}

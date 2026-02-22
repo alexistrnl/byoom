@@ -123,10 +123,10 @@ export default function MyPlantsPage() {
               // Déterminer le statut de santé (seulement si diagnostiquée)
               const healthStatus = hasDiagnosis
                 ? userPlant.health_score >= 80
-                  ? { label: 'Saine', emoji: '🟢', color: '#10B981' }
+                  ? { label: 'Saine', color: '#10B981' }
                   : userPlant.health_score >= 50
-                  ? { label: 'Attention', emoji: '🟡', color: '#F59E0B' }
-                  : { label: 'Critique', emoji: '🔴', color: '#EF4444' }
+                  ? { label: 'Attention', color: '#F59E0B' }
+                  : { label: 'Critique', color: '#EF4444' }
                 : null;
 
               // Couleur de la barre de progression
@@ -236,7 +236,7 @@ export default function MyPlantsPage() {
                             border: `1px solid ${healthStatus.color}60`,
                           }}
                         >
-                          {healthStatus.emoji} {healthStatus.label}
+                          {healthStatus.label}
                         </span>
                       </div>
                     ) : (
