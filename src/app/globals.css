@@ -140,19 +140,16 @@
     display: none; /* Chrome, Safari, Opera */
   }
   
+  /* Désactiver le zoom par pinch */
   html {
-    overscroll-behavior: none;
-    touch-action: pan-y pinch-zoom;
-    -ms-touch-action: pan-y pinch-zoom;
+    touch-action: pan-x pan-y;
   }
   
+  /* Scroll fluide avec overscroll élastique natif iOS */
   body {
     @apply bg-background text-foreground;
     overscroll-behavior-y: contain;
-    overscroll-behavior-x: none;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y pinch-zoom;
-    -ms-touch-action: pan-y pinch-zoom;
   }
   
   /* Réactiver la sélection uniquement sur les champs de saisie */
@@ -186,6 +183,13 @@
   [data-scrollable] {
     width: 100%;
     min-height: 100vh;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Toutes les pages scrollables */
+  .page-scroll {
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
   }

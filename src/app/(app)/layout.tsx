@@ -42,7 +42,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }}
     >
       {/* Contenu avec padding-bottom pour la bottom nav */}
-      <main className="flex-1" style={{ paddingBottom: '64px' }}>
+      <main className="page-scroll flex-1" style={{ 
+        height: 'calc(100vh - 80px)',
+        paddingBottom: '80px'
+      }}>
         {children}
       </main>
 
@@ -50,11 +53,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <nav
         className="fixed bottom-0 left-0 right-0 z-[100] flex items-center justify-around border-t bg-white"
         style={{
-          height: '64px',
-          padding: '0 1rem',
+          minHeight: '80px',
+          padding: '12px 1rem calc(12px + env(safe-area-inset-bottom))',
           borderTop: '1px solid rgba(82, 65, 76, 0.08)',
           boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.06)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
         {navItems.map((item) => {
