@@ -21,6 +21,9 @@ export default function PlantDetailPage() {
   const [diagOpen, setDiagOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [savingName, setSavingName] = useState(false);
 
   const id = params?.id as string;
 
@@ -100,6 +103,53 @@ export default function PlantDetailPage() {
       setError('Erreur lors de la suppression de la plante');
       setDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleStartEditName = () => {
+    if (!userPlant) return;
+    setEditedName(userPlant.nickname || plant?.common_name || '');
+    setIsEditingName(true);
+  };
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false);
+    setEditedName('');
+  };
+
+  const handleSaveName = async () => {
+    if (!userPlant || !id) return;
+
+    setSavingName(true);
+    try {
+      const response = await fetch(`/api/user-plants/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname: editedName.trim() || null, // Permettre de vider le nickname
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Erreur lors de la sauvegarde');
+      }
+
+      // Mettre à jour l'état local
+      setUserPlant({
+        ...userPlant,
+        nickname: editedName.trim() || undefined,
+      });
+
+      setIsEditingName(false);
+      setEditedName('');
+    } catch (error: any) {
+      console.error('Erreur lors de la sauvegarde du nom:', error);
+      setError(error.message || 'Erreur lors de la sauvegarde du nom');
+    } finally {
+      setSavingName(false);
     }
   };
 
@@ -380,17 +430,72 @@ export default function PlantDetailPage() {
             ← Mes plantes
           </Link>
 
-          {/* Nom commun */}
-          <h1
-            className="mb-1 font-serif font-bold"
-            style={{
-              fontSize: '1.75rem',
-              color: 'var(--color-night)',
-              marginBottom: '0.25rem',
-            }}
-          >
-            {userPlant.nickname || plant?.common_name || 'Sans nom'}
-          </h1>
+          {/* Nom commun - Éditable */}
+          <div className="mb-1 flex items-center gap-2">
+            {isEditingName ? (
+              <div className="flex flex-1 items-center gap-2">
+                <input
+                  type="text"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveName();
+                    } else if (e.key === 'Escape') {
+                      handleCancelEditName();
+                    }
+                  }}
+                  className="flex-1 rounded-lg border-2 px-3 py-2 font-serif text-lg font-bold outline-none focus:border-[var(--color-moss)]"
+                  style={{
+                    color: 'var(--color-night)',
+                    borderColor: 'rgba(0, 0, 0, 0.1)',
+                  }}
+                  autoFocus
+                  disabled={savingName}
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={savingName}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--color-moss)' }}
+                  aria-label="Sauvegarder"
+                >
+                  {savingName ? '...' : '✓'}
+                </button>
+                <button
+                  onClick={handleCancelEditName}
+                  disabled={savingName}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
+                  aria-label="Annuler"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <>
+                <h1
+                  className="flex-1 font-serif font-bold"
+                  style={{
+                    fontSize: '1.75rem',
+                    color: 'var(--color-night)',
+                    marginBottom: '0.25rem',
+                  }}
+                >
+                  {userPlant.nickname || plant?.common_name || 'Sans nom'}
+                </h1>
+                <button
+                  onClick={handleStartEditName}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 transition-all hover:scale-110 active:scale-95"
+                  style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
+                  aria-label="Modifier le nom"
+                  title="Modifier le nom"
+                >
+                  ✏️
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Nom scientifique */}
           {plant?.scientific_name && (

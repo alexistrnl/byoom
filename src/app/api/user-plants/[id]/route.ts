@@ -51,3 +51,46 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    
+    if (!id || id === 'null' || id === 'undefined') {
+      return NextResponse.json(
+        { error: 'ID de plante requis' },
+        { status: 400 }
+      );
+    }
+
+    const adminPb = await getAdminClient();
+
+    // Vérifier que la plante existe
+    const userPlant = await adminPb.collection('user_plants').getOne(id, {
+      requestKey: null,
+    });
+
+    // Mettre à jour uniquement le nickname si fourni
+    const updateData: any = {};
+    if (body.nickname !== undefined) {
+      updateData.nickname = body.nickname;
+    }
+
+    // Mettre à jour la plante
+    const updated = await adminPb.collection('user_plants').update(id, updateData, {
+      requestKey: null,
+    });
+
+    return NextResponse.json({ success: true, userPlant: updated });
+  } catch (error: any) {
+    console.error('Erreur lors de la mise à jour:', error);
+    return NextResponse.json(
+      { error: error.message || 'Erreur serveur' },
+      { status: 500 }
+    );
+  }
+}
