@@ -181,6 +181,27 @@
     input, textarea, [contenteditable] {
       touch-action: auto;
     }
+    
+    /* Empêcher le zoom automatique sur focus des inputs - taille minimum 16px */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    textarea {
+      font-size: 16px !important;
+      -webkit-appearance: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Empêcher le zoom lors du focus */
+    input:focus,
+    textarea:focus {
+      font-size: 16px !important;
+      transform: scale(1);
+      zoom: 1;
+    }
   }
   
   /* Réactiver la sélection uniquement sur les champs de saisie */
@@ -350,4 +371,24 @@ body.modal-open .bottom-nav {
   filter: blur(4px);
   opacity: 0.6;
   pointer-events: none;
+}
+
+/* Empêcher le zoom et le déplacement de la page lors du focus sur les inputs du chat */
+@media (hover: none) and (pointer: coarse) {
+  /* Empêcher le scroll automatique vers l'input lors du focus */
+  body.chat-open {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* S'assurer que le panel de chat ne bouge pas lors de l'ouverture du clavier */
+  body.chat-open [class*="fixed"] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
 }

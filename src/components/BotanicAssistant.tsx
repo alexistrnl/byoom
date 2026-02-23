@@ -180,6 +180,56 @@ export function BotanicAssistant() {
     }
   };
 
+  // Empêcher le zoom automatique sur mobile lors du focus
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Forcer la taille de police à 16px pour éviter le zoom sur iOS
+    // C'est la solution principale : iOS ne zoom pas si la taille >= 16px
+    if (e.target.style.fontSize !== '16px') {
+      e.target.style.fontSize = '16px';
+    }
+    
+    // Empêcher le scroll automatique vers l'input après un court délai
+    // pour laisser le temps au clavier de s'ouvrir
+    setTimeout(() => {
+      // Maintenir la position de scroll actuelle
+      if (window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    }, 100);
+  };
+  
+  // Gérer le viewport lors de l'ouverture/fermeture du clavier
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleViewportChange = () => {
+      // Empêcher le scroll de la page lors de l'ouverture du clavier
+      if (window.visualViewport) {
+        const viewport = window.visualViewport;
+        // Maintenir la position de scroll
+        document.documentElement.style.position = 'fixed';
+        document.documentElement.style.width = '100%';
+        document.documentElement.style.height = '100%';
+      }
+    };
+    
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+    }
+    
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
+      // Restaurer le comportement normal
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Bouton flottant */}
@@ -388,13 +438,17 @@ export function BotanicAssistant() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={handleFocus}
               placeholder="Demande-moi n'importe quoi sur les plantes..."
               disabled={isLoading}
-              className="flex-1 rounded-full px-4 py-3 text-sm outline-none disabled:opacity-50"
+              className="flex-1 rounded-full px-4 py-3 outline-none disabled:opacity-50"
               style={{
                 backgroundColor: '#F5F0E8',
                 border: 'none',
                 color: '#52414C',
+                fontSize: '16px', // Minimum 16px pour éviter le zoom automatique sur iOS
+                WebkitAppearance: 'none',
+                WebkitTapHighlightColor: 'transparent',
               }}
             />
             <button
