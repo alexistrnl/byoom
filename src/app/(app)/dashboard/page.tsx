@@ -9,6 +9,7 @@ import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { calculateLevel } from '@/lib/gamification';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BotanicAssistant } from '@/components/BotanicAssistant';
+import { SearchIcon, MicroscopeIcon, PlantIcon, BookIcon, ScissorsIcon, CompatibilityIcon } from '@/components/Icons';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function DashboardPage() {
@@ -104,11 +105,11 @@ export default function DashboardPage() {
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour >= 6 && hour < 12) {
-      return 'Tes plantes attendent leur dose de soleil ☀️';
+      return 'Tes plantes attendent leur dose de soleil';
     } else if (hour >= 12 && hour < 18) {
-      return 'Comment va ton jardin aujourd\'hui ? 🌿';
+      return 'Comment va ton jardin aujourd\'hui ?';
     } else {
-      return 'Une belle journée pour les plantes 🌙';
+      return 'Une belle journée pour les plantes';
     }
   };
 
@@ -143,7 +144,7 @@ export default function DashboardPage() {
             className="mb-2 font-serif font-bold text-2xl md:text-[1.75rem]"
             style={{ color: '#52414C' }}
           >
-            Bonjour, {getFirstName()} 👋
+            Bonjour, {getFirstName()}
           </h1>
           <p className="text-sm md:text-base" style={{ color: '#596157' }}>
             {getGreeting()}
@@ -195,7 +196,7 @@ export default function DashboardPage() {
               >
                 {userPlants.length}
               </div>
-              <span className="text-lg md:text-xl">🌿</span>
+              <PlantIcon size={20} color="#5B8C5A" className="md:w-6 md:h-6" />
             </div>
             <div className="text-xs" style={{ color: '#596157' }}>
               plantes dans ta collection
@@ -245,7 +246,9 @@ export default function DashboardPage() {
               fontWeight: 600,
             }}
           >
-            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">🔍</div>
+            <div className="mb-1 md:mb-2 flex items-center justify-center">
+              <SearchIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            </div>
             <div className="text-sm font-semibold md:text-base">Identifier</div>
             <div className="text-xs opacity-90 md:text-sm">Une nouvelle plante</div>
           </Link>
@@ -260,7 +263,9 @@ export default function DashboardPage() {
               fontWeight: 600,
             }}
           >
-            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">🔬</div>
+            <div className="mb-1 md:mb-2 flex items-center justify-center">
+              <MicroscopeIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            </div>
             <div className="text-sm font-semibold md:text-base">Diagnostiquer</div>
             <div className="text-xs opacity-90 md:text-sm">Santé d'une plante</div>
           </Link>
@@ -275,7 +280,9 @@ export default function DashboardPage() {
               fontWeight: 600,
             }}
           >
-            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">🌿</div>
+            <div className="mb-1 md:mb-2 flex items-center justify-center">
+              <PlantIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            </div>
             <div className="text-sm font-semibold md:text-base">Mes plantes</div>
             <div className="text-xs opacity-90 md:text-sm">Voir ma collection</div>
           </Link>
@@ -291,7 +298,9 @@ export default function DashboardPage() {
               fontWeight: 600,
             }}
           >
-            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">📖</div>
+            <div className="mb-1 md:mb-2 flex items-center justify-center">
+              <BookIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            </div>
             <div className="text-sm font-semibold md:text-base">ByoomBase</div>
             <div className="text-xs opacity-90 md:text-sm">Catalogue complet</div>
           </Link>
@@ -309,7 +318,9 @@ export default function DashboardPage() {
               cursor: 'not-allowed',
             }}
           >
-            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">✂️</div>
+            <div className="mb-1 md:mb-2 flex items-center justify-center">
+              <ScissorsIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            </div>
             <div className="text-sm font-semibold md:text-base">Conseil de coupe</div>
             <div className="text-xs opacity-90 md:text-sm">Prochainement</div>
           </div>
@@ -327,7 +338,9 @@ export default function DashboardPage() {
               cursor: 'not-allowed',
             }}
           >
-            <div className="mb-1 text-2xl md:mb-2 md:text-3xl">🌱</div>
+            <div className="mb-1 md:mb-2 flex items-center justify-center">
+              <CompatibilityIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            </div>
             <div className="text-sm font-semibold md:text-base">Compatibilité</div>
             <div className="text-xs opacity-90 md:text-sm">Prochainement</div>
           </div>
@@ -351,14 +364,16 @@ export default function DashboardPage() {
                 className="text-xs font-semibold transition-colors hover:opacity-80 md:text-sm"
                 style={{ color: '#5B8C5A' }}
               >
-                Voir tout →
+                Voir tout
               </Link>
             )}
           </div>
 
           {userPlants.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="mb-4 text-6xl">🌿</div>
+              <div className="mb-4 flex justify-center">
+                <PlantIcon size={64} color="#5B8C5A" />
+              </div>
               <p className="mb-4 text-sm" style={{ color: '#596157' }}>
                 Aucune plante encore
               </p>

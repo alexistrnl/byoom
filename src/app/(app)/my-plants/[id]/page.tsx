@@ -7,6 +7,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { MicroscopeIcon, WaterIcon, SunIcon, TemperatureIcon, HumidityIcon, SoilIcon, StarIcon, TrashIcon, AlertCircleIcon, LeafIcon, CheckCircleIcon, LightbulbIcon } from '@/components/Icons';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function PlantDetailPage() {
@@ -201,14 +202,14 @@ export default function PlantDetailPage() {
     return colors[severity.toLowerCase()] || '#596157';
   };
 
-  const getSeverityEmoji = (severity: string) => {
-    const emojis: Record<string, string> = {
-      grave: '🔴',
-      modéré: '🟡',
-      modere: '🟡',
-      faible: '🟢',
-    };
-    return emojis[severity.toLowerCase()] || '⚠️';
+  const getSeverityIcon = (severity: string, size: number = 14, color?: string) => {
+    const severityColor = color || getSeverityColor(severity);
+    const severityLower = severity.toLowerCase();
+    
+    if (severityLower === 'faible') {
+      return <CheckCircleIcon size={size} color={severityColor} />;
+    }
+    return <AlertCircleIcon size={size} color={severityColor} />;
   };
 
   // Parser l'analyse IA pour obtenir le health_score
@@ -251,27 +252,27 @@ export default function PlantDetailPage() {
   // Données pour la grille d'entretien
   const careItems = [
     plant?.watering_frequency && {
-      emoji: '💧',
+      icon: WaterIcon,
       label: 'Arrosage',
       text: formatWatering(plant.watering_frequency),
     },
     plant?.light_needs && {
-      emoji: '☀️',
+      icon: SunIcon,
       label: 'Lumière',
       text: formatText(plant.light_needs),
     },
     plant?.soil_type && {
-      emoji: '🌱',
+      icon: SoilIcon,
       label: 'Terreau',
       text: formatText(plant.soil_type),
     },
     (plant?.temperature_min || plant?.temperature_max) && {
-      emoji: '🌡️',
+      icon: TemperatureIcon,
       label: 'Température',
       text: `${plant.temperature_min}°C - ${plant.temperature_max}°C`,
     },
     plant?.humidity && {
-      emoji: '💨',
+      icon: HumidityIcon,
       label: 'Humidité',
       text: formatText(plant.humidity),
     },
@@ -358,7 +359,10 @@ export default function PlantDetailPage() {
                 }}
               >
                 <p className="text-xs font-medium text-white opacity-90">
-                  🔬 Fais le premier diagnostic pour connaître l'état de santé de ta plante
+                  <span className="inline-flex items-center gap-2">
+                    <MicroscopeIcon size={16} color="currentColor" />
+                    Fais le premier diagnostic pour connaître l'état de santé de ta plante
+                  </span>
                 </p>
               </div>
             )}
@@ -445,7 +449,7 @@ export default function PlantDetailPage() {
                       style={{ opacity: level <= difficulty ? 1 : 0.2 }}
                       className="text-base"
                     >
-                      ⭐
+                      <StarIcon size={16} color="#F59E0B" filled={level <= difficulty} />
                     </span>
                   ))}
                 </div>
@@ -501,7 +505,9 @@ export default function PlantDetailPage() {
                           border: '1px solid rgba(0, 0, 0, 0.06)',
                         }}
                       >
-                        <div className="mb-1 text-base">{item.emoji}</div>
+                        <div className="mb-1 flex items-center">
+                          {item.icon && <item.icon size={20} color="#5B8C5A" />}
+                        </div>
                         <div className="mb-1 text-xs font-bold" style={{ color: '#52414C' }}>
                           {item.label}
                         </div>
@@ -572,7 +578,9 @@ export default function PlantDetailPage() {
                       className="text-xs font-medium transition-colors hover:opacity-80"
                       style={{ color: 'var(--color-moss)' }}
                     >
-                      Aucun — 🔬
+                      <span className="inline-flex items-center gap-1">
+                        Aucun — <MicroscopeIcon size={14} color="currentColor" />
+                      </span>
                     </Link>
                   </div>
                 </div>
@@ -657,7 +665,6 @@ export default function PlantDetailPage() {
                         <div className="space-y-2">
                           {getDiagnosisIssues().map((issue: any, idx: number) => {
                             const severityColor = getSeverityColor(issue.severity || 'modéré');
-                            const severityEmoji = getSeverityEmoji(issue.severity || 'modéré');
                             return (
                               <div
                                 key={idx}
@@ -665,7 +672,7 @@ export default function PlantDetailPage() {
                                 style={{ borderLeft: `3px solid ${severityColor}` }}
                               >
                                 <div className="mb-1 flex items-center gap-2">
-                                  <span className="text-xs">{severityEmoji}</span>
+                                  {getSeverityIcon(issue.severity || 'modéré', 14, severityColor)}
                                   <span className="text-xs font-semibold" style={{ color: '#52414C' }}>
                                     {issue.type}
                                   </span>
@@ -723,7 +730,10 @@ export default function PlantDetailPage() {
                   color: '#DC2626',
                 }}
               >
-                ⚠️ Toxique pour les animaux
+                <span className="inline-flex items-center gap-1.5">
+                  <AlertCircleIcon size={14} color="#DC2626" />
+                  Toxique pour les animaux
+                </span>
               </div>
             )}
             {plant?.edible && !plant?.toxic_to_pets && (
@@ -734,7 +744,10 @@ export default function PlantDetailPage() {
                   color: '#059669',
                 }}
               >
-                🍃 Comestible
+                <span className="inline-flex items-center gap-1.5">
+                  <LeafIcon size={14} color="#059669" />
+                  Comestible
+                </span>
               </div>
             )}
           </div>
@@ -751,7 +764,10 @@ export default function PlantDetailPage() {
                   border: '1px solid rgba(239, 68, 68, 0.3)',
                 }}
               >
-                🗑️ Retirer de mon jardin
+                <span className="inline-flex items-center gap-2">
+                  <TrashIcon size={18} color="currentColor" />
+                  Retirer de mon jardin
+                </span>
               </button>
             ) : (
               <div className="space-y-3">
@@ -865,7 +881,10 @@ export default function PlantDetailPage() {
                 }}
               >
                 <p className="text-xs font-medium text-white opacity-90">
-                  🔬 Fais le premier diagnostic pour connaître l'état de santé de ta plante
+                  <span className="inline-flex items-center gap-2">
+                    <MicroscopeIcon size={16} color="currentColor" />
+                    Fais le premier diagnostic pour connaître l'état de santé de ta plante
+                  </span>
                 </p>
               </div>
             )}
@@ -883,7 +902,10 @@ export default function PlantDetailPage() {
                 boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
               }}
             >
-              🔬 Diagnostiquer
+              <span className="inline-flex items-center gap-2">
+                <MicroscopeIcon size={18} color="currentColor" />
+                Diagnostiquer
+              </span>
             </Link>
           </div>
         </div>
@@ -1016,7 +1038,9 @@ export default function PlantDetailPage() {
                         gridColumn: index === careItems.length - 1 && careItems.length % 2 === 1 ? 'span 2' : 'auto',
                       }}
                     >
-                      <div className="mb-1 text-lg">{item.emoji}</div>
+                      <div className="mb-1 flex items-center">
+                        {item.icon && <item.icon size={20} color="#5B8C5A" />}
+                      </div>
                       <div className="mb-1 text-xs font-bold" style={{ color: '#52414C' }}>
                         {item.label}
                       </div>
@@ -1087,7 +1111,9 @@ export default function PlantDetailPage() {
                     className="text-sm font-medium transition-colors hover:opacity-80"
                     style={{ color: 'var(--color-moss)' }}
                   >
-                    Aucun diagnostic — 🔬 Diagnostiquer
+                    <span className="inline-flex items-center gap-1.5">
+                      Aucun diagnostic — <MicroscopeIcon size={16} color="currentColor" /> Diagnostiquer
+                    </span>
                   </Link>
                 </div>
               </div>
@@ -1172,7 +1198,6 @@ export default function PlantDetailPage() {
                       <div className="space-y-2">
                         {getDiagnosisIssues().map((issue: any, idx: number) => {
                           const severityColor = getSeverityColor(issue.severity || 'modéré');
-                          const severityEmoji = getSeverityEmoji(issue.severity || 'modéré');
                           return (
                             <div
                               key={idx}
@@ -1180,7 +1205,7 @@ export default function PlantDetailPage() {
                               style={{ borderLeft: `3px solid ${severityColor}` }}
                             >
                               <div className="mb-1 flex items-center gap-2">
-                                <span>{severityEmoji}</span>
+                                {getSeverityIcon(issue.severity || 'modéré', 14, severityColor)}
                                 <span className="text-xs font-semibold" style={{ color: '#52414C' }}>
                                   {issue.type}
                                 </span>
@@ -1238,7 +1263,10 @@ export default function PlantDetailPage() {
                 color: '#DC2626',
               }}
             >
-              ⚠️ Toxique pour les animaux
+              <span className="inline-flex items-center gap-1.5">
+                <AlertCircleIcon size={14} color="#DC2626" />
+                Toxique pour les animaux
+              </span>
             </div>
           )}
           {plant?.edible && !plant?.toxic_to_pets && (
@@ -1249,7 +1277,10 @@ export default function PlantDetailPage() {
                 color: '#059669',
               }}
             >
-              🍃 Comestible
+              <span className="inline-flex items-center gap-1.5">
+                <LeafIcon size={14} color="#059669" />
+                Comestible
+              </span>
             </div>
           )}
         </div>
@@ -1266,7 +1297,10 @@ export default function PlantDetailPage() {
                 border: '1px solid rgba(239, 68, 68, 0.3)',
               }}
             >
-              🗑️ Retirer de mon jardin
+              <span className="inline-flex items-center gap-2">
+                <TrashIcon size={18} color="currentColor" />
+                Retirer de mon jardin
+              </span>
             </button>
           ) : (
             <div className="space-y-3">

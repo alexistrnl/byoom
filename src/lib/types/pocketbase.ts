@@ -21,6 +21,10 @@ export interface Plant {
   scientific_name: string;
   family: string;
   description: string;
+  brief_description?: string;
+  history?: string;
+  fun_facts?: string[] | string; // JSON array or string
+  uses?: string;
   difficulty: number; // 1-5
   watering_frequency: string;
   light_needs: "faible" | "moyen" | "fort" | "direct";
