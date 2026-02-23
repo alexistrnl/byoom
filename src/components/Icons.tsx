@@ -226,3 +226,13 @@ export const ArrowRightIcon = ({ className = '', size = 24, color = 'currentColo
     <circle cx="19" cy="12" r="1.5" fill={color} opacity="0.3" />
   </svg>
 );
+
+export const HomeIcon = ({ className = '', size = 24, color = 'currentColor' }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeWidth="1.5" />
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill={color} opacity="0.1" />
+    <polyline points="9 22 9 12 15 12 15 22" strokeWidth="1.5" />
+    <rect x="9" y="12" width="6" height="10" fill={color} opacity="0.15" />
+    <circle cx="12" cy="8" r="1" fill={color} opacity="0.3" />
+  </svg>
+);

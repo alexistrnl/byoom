@@ -174,7 +174,7 @@ export function BotanicAssistant() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[1000] flex h-[60px] w-[60px] items-center justify-center rounded-full text-2xl text-white transition-all hover:scale-110 active:scale-95"
+          className="fixed top-4 right-4 z-[1000] flex h-[60px] w-[60px] items-center justify-center rounded-full text-2xl text-white transition-all hover:scale-110 active:scale-95"
           style={{
             backgroundColor: '#5B8C5A',
             boxShadow: '0 4px 20px rgba(91, 140, 90, 0.4)',

@@ -278,3 +278,29 @@
 .animate-fadeIn {
   animation: fadeIn 0.3s ease;
 }
+
+/* Masquer le logo Next.js en bas à gauche */
+#__next-build-watcher,
+[data-nextjs-toast],
+[data-nextjs-dialog],
+.nextjs-toast-root,
+.nextjs-dialog-root {
+  display: none !important;
+}
+
+/* Masquer les liens Next.js/Vercel en bas à gauche */
+a[href*="nextjs.org"],
+a[href*="vercel.com"],
+a[href*="nextjs.org"] svg,
+a[href*="vercel.com"] svg {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Masquer tout élément positionné en bas à gauche qui pourrait être le logo Next.js */
+body > a[style*="position: fixed"][style*="bottom"],
+body > a[style*="position:fixed"][style*="bottom"] {
+  display: none !important;
+}
