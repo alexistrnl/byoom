@@ -73,45 +73,41 @@ export default function ByoomBaseDetailPage() {
 
   const difficulty = Number(plant.difficulty) || 1;
 
-  // Formatage des textes
-  const formatText = (text: string | undefined) => {
-    if (!text) return 'Non spécifié';
-    return text;
-  };
-
-  const formatWatering = (freq: string | undefined) => {
-    if (!freq) return 'Non spécifié';
-    return freq;
+  // Type pour les items d'entretien
+  type CareItem = {
+    icon: React.ComponentType<any>;
+    label: string;
+    text: string;
   };
 
   // Données pour la grille d'entretien
-  const careItems = [
-    plant?.watering_frequency && {
+  const careItems: CareItem[] = [
+    {
       icon: WaterIcon,
       label: 'Arrosage',
-      text: formatWatering(plant.watering_frequency),
+      text: plant.watering_frequency || '',
     },
-    plant?.light_needs && {
+    {
       icon: SunIcon,
       label: 'Lumière',
-      text: formatText(plant.light_needs),
+      text: plant.light_needs || '',
     },
-    plant?.soil_type && {
+    {
       icon: SoilIcon,
       label: 'Terreau',
-      text: formatText(plant.soil_type),
+      text: plant.soil_type || '',
     },
-    (plant?.temperature_min || plant?.temperature_max) && {
+    {
       icon: TemperatureIcon,
       label: 'Température',
       text: `${plant.temperature_min || '?'}°C - ${plant.temperature_max || '?'}°C`,
     },
-    plant?.humidity && {
+    {
       icon: HumidityIcon,
       label: 'Humidité',
-      text: formatText(plant.humidity),
+      text: plant.humidity || '',
     },
-  ].filter(Boolean);
+  ].filter((item) => item.text) as CareItem[];
 
   // Parse fun_facts si c'est une string JSON
   let funFacts: string[] = [];
@@ -248,7 +244,7 @@ export default function ByoomBaseDetailPage() {
             </h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {careItems.map((item, idx) => {
-                const Icon = item?.icon;
+                const Icon = item.icon;
                 return (
                   <div
                     key={idx}
@@ -267,10 +263,10 @@ export default function ByoomBaseDetailPage() {
                     )}
                     <div className="flex-1">
                       <div className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: '#596157' }}>
-                        {item?.label}
+                        {item.label}
                       </div>
                       <div className="text-sm font-medium" style={{ color: '#52414C' }}>
-                        {item?.text}
+                        {item.text}
                       </div>
                     </div>
                   </div>
