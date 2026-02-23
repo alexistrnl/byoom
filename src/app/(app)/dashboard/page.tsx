@@ -9,7 +9,6 @@ import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { calculateLevel } from '@/lib/gamification';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BotanicAssistant } from '@/components/BotanicAssistant';
-import { SearchIcon, MicroscopeIcon, PlantIcon, BookIcon, ScissorsIcon, CompatibilityIcon } from '@/components/Icons';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
 export default function DashboardPage() {
@@ -138,249 +137,287 @@ export default function DashboardPage() {
       style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
     >
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
-        {/* HEADER */}
-        <div className="mb-6 md:mb-8">
-          <h1
-            className="mb-2 font-serif font-bold text-2xl md:text-[1.75rem]"
-            style={{ color: '#52414C' }}
-          >
-            Bonjour, {getFirstName()}
-          </h1>
-          <p className="text-sm md:text-base" style={{ color: '#596157' }}>
-            {getGreeting()}
-          </p>
-        </div>
-
-        {/* SECTION STATS (3 cards horizontales) */}
-        <div className="mb-6 grid grid-cols-1 gap-4 md:mb-8 md:grid-cols-3">
-          {/* Card Niveau */}
-          <div
-            className="rounded-2xl bg-white p-4 md:p-6"
-            style={{ border: '1px solid rgba(0, 0, 0, 0.06)' }}
-          >
-            <div className="mb-2 text-xs md:text-sm" style={{ color: '#596157' }}>
-              Niveau
-            </div>
-            <div
-              className="mb-3 font-serif font-bold text-3xl md:text-[2rem]"
-              style={{ color: '#5B8C5A' }}
+        {/* HEADER avec fond dégradé */}
+        <div className="mb-6 rounded-3xl p-6 md:mb-8 md:p-8" style={{ 
+          background: 'linear-gradient(135deg, #5B8C5A 0%, #6BA06A 100%)',
+          boxShadow: '0 8px 24px rgba(91, 140, 90, 0.2)'
+        }}>
+          <div className="mb-2">
+            <h1
+              className="mb-2 font-serif font-bold text-3xl text-white md:text-4xl"
             >
-              {name}
-            </div>
-            <div className="mb-2 h-1.5 w-full rounded-full bg-gray-200">
-              <div
-                className="h-1.5 rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min(progress, 100)}%`,
-                  backgroundColor: '#5B8C5A',
-                }}
-              />
-            </div>
-            <div className="text-xs" style={{ color: '#596157' }}>
-              {pointsTotal} / {nextLevelPoints} XP
-            </div>
-          </div>
-
-          {/* Card Plantes */}
-          <div
-            className="rounded-2xl bg-white p-4 md:p-6"
-            style={{ border: '1px solid rgba(0, 0, 0, 0.06)' }}
-          >
-            <div className="mb-2 text-xs md:text-sm" style={{ color: '#596157' }}>
-              Plantes
-            </div>
-            <div className="mb-1 flex items-baseline gap-2">
-              <div
-                className="font-serif font-bold text-3xl md:text-[2rem]"
-                style={{ color: '#52414C' }}
-              >
-                {userPlants.length}
-              </div>
-              <PlantIcon size={20} color="#5B8C5A" className="md:w-6 md:h-6" />
-            </div>
-            <div className="text-xs" style={{ color: '#596157' }}>
-              plantes dans ta collection
-            </div>
-          </div>
-
-          {/* Card Santé moyenne */}
-          <div
-            className="rounded-2xl bg-white p-4 md:p-6"
-            style={{ border: '1px solid rgba(0, 0, 0, 0.06)' }}
-          >
-            <div className="mb-2 text-xs md:text-sm" style={{ color: '#596157' }}>
-              Santé moyenne
-            </div>
-            <div className="mb-1 flex items-baseline gap-2">
-              <div
-                className="font-serif font-bold text-3xl md:text-[2rem]"
-                style={{ color: getHealthColor(averageHealthScore) }}
-              >
-                {averageHealthScore}
-              </div>
-              <span className="text-xs" style={{ color: '#596157' }}>
-                /100
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-2 w-2 rounded-full"
-                style={{ backgroundColor: getHealthColor(averageHealthScore) }}
-              />
-              <div className="text-xs" style={{ color: '#596157' }}>
-                score de santé moyen
-              </div>
-            </div>
+              Bonjour, {getFirstName()} 👋
+            </h1>
+            <p className="text-sm text-white opacity-95 md:text-base">
+              {getGreeting()}
+            </p>
           </div>
         </div>
 
-        {/* ACTIONS RAPIDES (6 boutons) */}
-        <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-2 lg:grid-cols-3 md:gap-4">
-          <Link
-            href="/identify"
-            className="flex flex-col items-center justify-center rounded-3xl text-center text-white transition-all hover:scale-105 p-4 md:p-6"
-            style={{
-              backgroundColor: '#5B8C5A',
-              minHeight: '100px',
-              height: 'auto',
-              fontWeight: 600,
+        {/* SECTION STATS (3 cards horizontales avec design premium) */}
+        <div className="mb-6 grid grid-cols-1 gap-4 md:mb-8 md:grid-cols-3 md:gap-6">
+          {/* Card Niveau avec gradient */}
+          <div
+            className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg md:rounded-3xl md:p-6"
+            style={{ 
+              border: '1px solid rgba(0, 0, 0, 0.06)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
             }}
           >
-            <div className="mb-1 md:mb-2 flex items-center justify-center">
-              <SearchIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            {/* Étoile en bas à droite - partiellement coupée */}
+            <div className="absolute opacity-8" style={{ bottom: '-80px', right: '-80px' }}>
+              <svg width="180" height="180" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#5B8C5A" />
+              </svg>
             </div>
-            <div className="text-sm font-semibold md:text-base">Identifier</div>
-            <div className="text-xs opacity-90 md:text-sm">Une nouvelle plante</div>
+            <div className="relative">
+              <div className="mb-2">
+                <div className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: '#596157' }}>
+                  Niveau
+                </div>
+              </div>
+              <div
+                className="mb-4 font-serif font-bold text-3xl md:text-4xl"
+                style={{ color: '#5B8C5A' }}
+              >
+                {name}
+              </div>
+              <div className="mb-2 h-2 w-full rounded-full bg-gray-100">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min(progress, 100)}%`,
+                    background: 'linear-gradient(90deg, #5B8C5A 0%, #6BA06A 100%)',
+                    boxShadow: '0 2px 8px rgba(91, 140, 90, 0.4)',
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs md:text-sm" style={{ color: '#596157' }}>
+                <span>{pointsTotal} XP</span>
+                <span className="font-semibold">{nextLevelPoints} XP</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card Plantes avec icône décorative */}
+          <div
+            className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg md:rounded-3xl md:p-6"
+            style={{ 
+              border: '1px solid rgba(0, 0, 0, 0.06)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+            }}
+          >
+            {/* Plante en bas à droite - partiellement coupée */}
+            <div className="absolute opacity-8" style={{ bottom: '-40px', right: '-40px' }}>
+              <svg width="140" height="140" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2V20M12 2C15 0 18 2 18 6C18 10 15 12 12 14M12 2C9 0 6 2 6 6C6 10 9 12 12 14M8 14C10 16 12 16 14 14M10 18C11 19 12 19 14 18" stroke="#5B8C5A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="relative">
+              <div className="mb-2">
+                <div className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: '#596157' }}>
+                  Plantes
+                </div>
+              </div>
+              <div className="mb-2">
+                <div
+                  className="font-serif font-bold text-3xl md:text-4xl"
+                  style={{ color: '#52414C' }}
+                >
+                  {userPlants.length}
+                </div>
+              </div>
+              <div className="text-xs md:text-sm" style={{ color: '#596157' }}>
+                dans ta collection
+              </div>
+            </div>
+          </div>
+
+          {/* Card Santé moyenne avec indicateur visuel */}
+          <div
+            className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg md:rounded-3xl md:p-6"
+            style={{ 
+              border: '1px solid rgba(0, 0, 0, 0.06)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+            }}
+          >
+            {/* Cœur en bas à droite - partiellement coupé */}
+            <div className="absolute opacity-8" style={{ bottom: '-40px', right: '-40px' }}>
+              <svg width="140" height="140" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.57831 8.50903 2.99871 7.05 2.99871C5.59096 2.99871 4.19169 3.57831 3.16 4.61C2.1283 5.64169 1.54871 7.04097 1.54871 8.5C1.54871 9.95903 2.1283 11.3583 3.16 12.39L4.22 13.45L12 21.23L19.78 13.45L20.84 12.39C21.351 11.8792 21.7564 11.2728 22.0329 10.6054C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.0621 22.0329 6.39464C21.7564 5.72718 21.351 5.12075 20.84 4.61Z" fill={getHealthColor(averageHealthScore)} />
+              </svg>
+            </div>
+            <div className="relative">
+              <div className="mb-2">
+                <div className="text-xs font-semibold uppercase tracking-wide md:text-sm" style={{ color: '#596157' }}>
+                  Santé moyenne
+                </div>
+              </div>
+              <div className="mb-2 flex items-baseline gap-2">
+                <div
+                  className="font-serif font-bold text-3xl md:text-4xl"
+                  style={{ color: getHealthColor(averageHealthScore) }}
+                >
+                  {averageHealthScore}
+                </div>
+                <span className="text-sm md:text-base" style={{ color: '#596157' }}>
+                  /100
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded-full"
+                  style={{ 
+                    backgroundColor: getHealthColor(averageHealthScore),
+                    boxShadow: `0 0 8px ${getHealthColor(averageHealthScore)}60`
+                  }}
+                />
+                <div className="text-xs md:text-sm" style={{ color: '#596157' }}>
+                  score de santé
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ACTIONS RAPIDES avec design premium */}
+        <div className="mb-6 grid grid-cols-2 gap-4 md:mb-8 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
+          <Link
+            href="/identify"
+            className="group relative overflow-hidden rounded-2xl text-center text-white transition-all active:scale-[0.98] md:rounded-3xl"
+            style={{
+              background: 'linear-gradient(135deg, #5B8C5A 0%, #6BA06A 100%)',
+              padding: '24px 16px',
+              minHeight: '140px',
+              boxShadow: '0 8px 24px rgba(91, 140, 90, 0.3)',
+            }}
+          >
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full opacity-20" style={{ backgroundColor: 'white' }} />
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white bg-opacity-20 backdrop-blur-sm md:h-16 md:w-16">
+                <span className="text-3xl md:text-4xl">🔍</span>
+              </div>
+              <div className="mb-1 text-base font-bold md:text-lg">Identifier</div>
+              <div className="text-xs opacity-90 md:text-sm">Une nouvelle plante</div>
+            </div>
           </Link>
 
           <Link
             href="/diagnose"
-            className="flex flex-col items-center justify-center rounded-3xl text-center text-white transition-all hover:scale-105 p-4 md:p-6"
+            className="group relative overflow-hidden rounded-2xl text-center text-white transition-all active:scale-[0.98] md:rounded-3xl"
             style={{
-              backgroundColor: '#52414C',
-              minHeight: '100px',
-              height: 'auto',
-              fontWeight: 600,
+              background: 'linear-gradient(135deg, #52414C 0%, #6B5B6B 100%)',
+              padding: '24px 16px',
+              minHeight: '140px',
+              boxShadow: '0 8px 24px rgba(82, 65, 76, 0.3)',
             }}
           >
-            <div className="mb-1 md:mb-2 flex items-center justify-center">
-              <MicroscopeIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full opacity-20" style={{ backgroundColor: 'white' }} />
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white bg-opacity-20 backdrop-blur-sm md:h-16 md:w-16">
+                <span className="text-3xl md:text-4xl">🔬</span>
+              </div>
+              <div className="mb-1 text-base font-bold md:text-lg">Diagnostiquer</div>
+              <div className="text-xs opacity-90 md:text-sm">Santé d'une plante</div>
             </div>
-            <div className="text-sm font-semibold md:text-base">Diagnostiquer</div>
-            <div className="text-xs opacity-90 md:text-sm">Santé d'une plante</div>
           </Link>
 
           <Link
             href="/my-plants"
-            className="flex flex-col items-center justify-center rounded-3xl text-center text-white transition-all hover:scale-105 p-4 md:p-6"
+            className="group relative overflow-hidden rounded-2xl text-center text-white transition-all active:scale-[0.98] md:rounded-3xl"
             style={{
-              backgroundColor: '#596157',
-              minHeight: '100px',
-              height: 'auto',
-              fontWeight: 600,
+              background: 'linear-gradient(135deg, #596157 0%, #6B7A6B 100%)',
+              padding: '24px 16px',
+              minHeight: '140px',
+              boxShadow: '0 8px 24px rgba(89, 97, 87, 0.3)',
             }}
           >
-            <div className="mb-1 md:mb-2 flex items-center justify-center">
-              <PlantIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full opacity-20" style={{ backgroundColor: 'white' }} />
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white bg-opacity-20 backdrop-blur-sm md:h-16 md:w-16">
+                <span className="text-3xl md:text-4xl">🌿</span>
+              </div>
+              <div className="mb-1 text-base font-bold md:text-lg">Mon jardin</div>
+              <div className="text-xs opacity-90 md:text-sm">Voir ma collection</div>
             </div>
-            <div className="text-sm font-semibold md:text-base">Mes plantes</div>
-            <div className="text-xs opacity-90 md:text-sm">Voir ma collection</div>
           </Link>
 
           <Link
             href="/byoombase"
-            className="flex flex-col items-center justify-center rounded-3xl text-center transition-all hover:scale-105 p-4 md:p-6"
+            className="group relative overflow-hidden rounded-2xl text-center transition-all active:scale-[0.98] md:rounded-3xl"
             style={{
-              backgroundColor: '#CFD186',
+              background: 'linear-gradient(135deg, #CFD186 0%, #D9E0A0 100%)',
               color: '#52414C',
-              minHeight: '100px',
-              height: 'auto',
-              fontWeight: 600,
+              padding: '24px 16px',
+              minHeight: '140px',
+              boxShadow: '0 8px 24px rgba(207, 209, 134, 0.3)',
             }}
           >
-            <div className="mb-1 md:mb-2 flex items-center justify-center">
-              <BookIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-full opacity-20" style={{ backgroundColor: '#52414C' }} />
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-white bg-opacity-60 backdrop-blur-sm md:h-16 md:w-16">
+                <span className="text-3xl md:text-4xl">📖</span>
+              </div>
+              <div className="mb-1 text-base font-bold md:text-lg">ByoomBase</div>
+              <div className="text-xs opacity-90 md:text-sm">Catalogue complet</div>
             </div>
-            <div className="text-sm font-semibold md:text-base">ByoomBase</div>
-            <div className="text-xs opacity-90 md:text-sm">Catalogue complet</div>
           </Link>
-
-          {/* Conseil de coupe - Prochainement */}
-          <div
-            className="flex flex-col items-center justify-center rounded-3xl text-center p-4 md:p-6"
-            style={{
-              backgroundColor: '#E5E5E5',
-              color: '#9CA3AF',
-              minHeight: '100px',
-              height: 'auto',
-              fontWeight: 600,
-              opacity: 0.7,
-              cursor: 'not-allowed',
-            }}
-          >
-            <div className="mb-1 md:mb-2 flex items-center justify-center">
-              <ScissorsIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
-            </div>
-            <div className="text-sm font-semibold md:text-base">Conseil de coupe</div>
-            <div className="text-xs opacity-90 md:text-sm">Prochainement</div>
-          </div>
-
-          {/* Compatibilité des plantes - Prochainement */}
-          <div
-            className="flex flex-col items-center justify-center rounded-3xl text-center p-4 md:p-6"
-            style={{
-              backgroundColor: '#E5E5E5',
-              color: '#9CA3AF',
-              minHeight: '100px',
-              height: 'auto',
-              fontWeight: 600,
-              opacity: 0.7,
-              cursor: 'not-allowed',
-            }}
-          >
-            <div className="mb-1 md:mb-2 flex items-center justify-center">
-              <CompatibilityIcon size={32} color="currentColor" className="md:w-10 md:h-10" />
-            </div>
-            <div className="text-sm font-semibold md:text-base">Compatibilité</div>
-            <div className="text-xs opacity-90 md:text-sm">Prochainement</div>
-          </div>
         </div>
 
-        {/* DERNIÈRES PLANTES */}
+        {/* DERNIÈRES PLANTES avec design premium */}
         <div
-          className="rounded-2xl bg-white p-4 md:p-6"
-          style={{ border: '1px solid rgba(0, 0, 0, 0.06)' }}
+          className="rounded-2xl bg-white p-5 shadow-lg md:rounded-3xl md:p-6"
+          style={{ 
+            border: '1px solid rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+          }}
         >
-          <div className="mb-4 flex items-center justify-between md:mb-6">
-            <h2
-              className="font-serif font-bold text-xl md:text-[1.5rem]"
-              style={{ color: '#52414C' }}
-            >
-              Mon jardin
-            </h2>
+          <div className="mb-5 flex items-center justify-between md:mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl md:h-12 md:w-12 md:rounded-2xl" style={{ backgroundColor: '#5B8C5A' }}>
+                <span className="text-xl md:text-2xl">🌿</span>
+              </div>
+              <h2
+                className="font-serif font-bold text-xl md:text-2xl"
+                style={{ color: '#52414C' }}
+              >
+                Mon jardin
+              </h2>
+            </div>
             {userPlants.length > 0 && (
               <Link
                 href="/my-plants"
-                className="text-xs font-semibold transition-colors hover:opacity-80 md:text-sm"
-                style={{ color: '#5B8C5A' }}
+                className="rounded-full px-4 py-2 text-xs font-semibold transition-all active:scale-95 md:px-5 md:py-2.5 md:text-sm"
+                style={{ 
+                  color: '#5B8C5A',
+                  backgroundColor: 'rgba(91, 140, 90, 0.1)',
+                }}
               >
-                Voir tout
+                Voir tout →
               </Link>
             )}
           </div>
 
           {userPlants.length === 0 ? (
-            <div className="py-12 text-center">
+            <div className="py-12 text-center md:py-16">
               <div className="mb-4 flex justify-center">
-                <PlantIcon size={64} color="#5B8C5A" />
+                <div className="flex h-20 w-20 items-center justify-center rounded-full md:h-24 md:w-24" style={{ backgroundColor: 'rgba(91, 140, 90, 0.1)' }}>
+                  <span className="text-5xl md:text-6xl">🌿</span>
+                </div>
               </div>
-              <p className="mb-4 text-sm" style={{ color: '#596157' }}>
-                Aucune plante encore
+              <h3 className="mb-2 font-serif text-lg font-bold md:text-xl" style={{ color: '#52414C' }}>
+                Votre jardin vous attend
+              </h3>
+              <p className="mb-6 text-sm md:text-base" style={{ color: '#596157' }}>
+                Commencez votre collection en identifiant votre première plante
               </p>
               <Link
                 href="/identify"
-                className="inline-block rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105"
-                style={{ backgroundColor: '#5B8C5A' }}
+                className="inline-block rounded-full px-6 py-3 text-sm font-semibold text-white transition-all active:scale-95 md:px-8 md:py-3.5 md:text-base"
+                style={{ 
+                  background: 'linear-gradient(135deg, #5B8C5A 0%, #6BA06A 100%)',
+                  boxShadow: '0 4px 16px rgba(91, 140, 90, 0.3)'
+                }}
               >
                 Identifier ma première plante
               </Link>
@@ -396,67 +433,80 @@ export default function DashboardPage() {
 
                 // Vérifier si la plante a été diagnostiquée
                 const hasDiagnosis = userPlant.health_score > 0;
-                const healthColor = hasDiagnosis
-                  ? getHealthColor(userPlant.health_score)
-                  : '#CFD186';
                 const healthStatus = hasDiagnosis
                   ? userPlant.health_score >= 80
-                    ? { label: 'Saine', color: '#10B981' }
+                    ? { label: 'Saine', color: '#10B981', bgColor: 'rgba(16, 185, 129, 0.1)' }
                     : userPlant.health_score >= 50
-                    ? { label: 'Attention', color: '#F59E0B' }
-                    : { label: 'Critique', color: '#EF4444' }
-                  : { label: 'Diagnostic à faire', color: '#CFD186' };
+                    ? { label: 'Attention', color: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.1)' }
+                    : { label: 'Critique', color: '#EF4444', bgColor: 'rgba(239, 68, 68, 0.1)' }
+                  : { label: 'À diagnostiquer', color: '#CFD186', bgColor: 'rgba(207, 209, 134, 0.1)' };
 
                 return (
                   <Link
                     key={userPlant.id}
                     href={`/my-plants/${userPlant.id}`}
-                    className="flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-gray-50"
-                    style={{ border: '1px solid rgba(0, 0, 0, 0.06)' }}
+                    className="group flex items-center gap-4 rounded-xl p-4 transition-all active:scale-[0.98] md:rounded-2xl"
+                    style={{ 
+                      border: '1px solid rgba(0, 0, 0, 0.06)',
+                      backgroundColor: 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#F5F0E8';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
                   >
-                    {/* Photo miniature */}
+                    {/* Photo miniature avec bordure */}
                     {photoUrl ? (
-                      <img
-                        src={photoUrl}
-                        alt={userPlant.nickname || plant?.common_name || 'Plante'}
-                        className="h-12 w-12 rounded-xl object-cover"
-                        style={{ borderRadius: '12px' }}
-                      />
+                      <div className="relative">
+                        <img
+                          src={photoUrl}
+                          alt={userPlant.nickname || plant?.common_name || 'Plante'}
+                          className="h-14 w-14 rounded-xl object-cover md:h-16 md:w-16 md:rounded-2xl"
+                          style={{ border: '2px solid rgba(91, 140, 90, 0.2)' }}
+                        />
+                      </div>
                     ) : (
                       <div
-                        className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-                        style={{ backgroundColor: '#CFD186' }}
+                        className="flex h-14 w-14 items-center justify-center rounded-xl text-2xl md:h-16 md:w-16 md:rounded-2xl"
+                        style={{ 
+                          background: 'linear-gradient(135deg, #CFD186 0%, #D9E0A0 100%)',
+                          border: '2px solid rgba(91, 140, 90, 0.2)'
+                        }}
                       >
                         🌿
                       </div>
                     )}
 
                     {/* Nom + nom scientifique */}
-                    <div className="flex-1">
-                      <div className="font-semibold" style={{ color: '#52414C' }}>
+                    <div className="flex-1 min-w-0">
+                      <div className="mb-1 truncate text-base font-bold md:text-lg" style={{ color: '#52414C' }}>
                         {userPlant.nickname || plant?.common_name || 'Sans nom'}
                       </div>
                       {plant?.scientific_name && (
-                        <div className="text-xs italic" style={{ color: '#596157' }}>
+                        <div className="truncate text-xs italic md:text-sm" style={{ color: '#596157' }}>
                           {plant.scientific_name}
                         </div>
                       )}
                     </div>
 
-                    {/* Badge santé coloré */}
+                    {/* Badge santé coloré avec design amélioré */}
                     <div
-                      className="rounded-full px-3 py-1 text-xs font-semibold"
+                      className="shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold md:px-4 md:py-2 md:text-sm"
                       style={{
-                        backgroundColor: `${healthStatus.color}40`,
+                        backgroundColor: healthStatus.bgColor,
                         color: healthStatus.color,
-                        border: `1px solid ${healthStatus.color}60`,
+                        border: `1.5px solid ${healthStatus.color}60`,
                       }}
                     >
                       {healthStatus.label}
                     </div>
 
-                    {/* Flèche */}
-                    <span className="text-lg" style={{ color: '#596157' }}>
+                    {/* Flèche avec animation */}
+                    <span className="shrink-0 text-xl transition-transform group-hover:translate-x-1 md:text-2xl" style={{ color: '#596157' }}>
                       →
                     </span>
                   </Link>

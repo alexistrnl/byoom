@@ -64,29 +64,17 @@ export default function MyPlantsPage() {
     >
       <div className="container mx-auto px-4 py-8 lg:px-8">
         {/* HEADER */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1
-              className="mb-2 font-serif font-bold"
-              style={{ fontSize: '2.5rem', color: 'var(--color-night)' }}
-            >
-              🌿 Mon Jardin
-            </h1>
-            <p className="text-sm" style={{ color: '#6B7280' }}>
-              {userPlants.length} {userPlants.length === 1 ? 'plante' : 'plantes'} · Score moyen santé{' '}
-              {averageHealthScore}/100
-            </p>
-          </div>
-          <Link
-            href="/identify"
-            className="inline-flex items-center justify-center rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105"
-            style={{
-              backgroundColor: 'var(--color-moss)',
-              boxShadow: '0 2px 8px rgba(91, 140, 90, 0.3)',
-            }}
+        <div className="mb-8">
+          <h1
+            className="mb-2 font-serif font-bold"
+            style={{ fontSize: '2.5rem', color: 'var(--color-night)' }}
           >
-            + Identifier une plante
-          </Link>
+            🌿 Mon Jardin
+          </h1>
+          <p className="text-sm" style={{ color: '#6B7280' }}>
+            {userPlants.length} {userPlants.length === 1 ? 'plante' : 'plantes'} · Score moyen santé{' '}
+            {averageHealthScore}/100
+          </p>
         </div>
 
         {/* ÉTAT VIDE */}

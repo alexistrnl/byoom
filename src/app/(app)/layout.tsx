@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
+import { HomeIcon, PlantIcon, SearchIcon, MicroscopeIcon, BookIcon } from '@/components/Icons';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -27,11 +28,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Navigation items
   const navItems = [
-    { path: '/dashboard', label: 'Accueil', emoji: '🏠' },
-    { path: '/my-plants', label: 'Mon Jardin', emoji: '🌿' },
-    { path: '/identify', label: 'Identifier', emoji: '🔍', isCentral: true },
-    { path: '/diagnose', label: 'Diag', emoji: '🔬' },
-    { path: '/byoombase', label: 'Byoombase', emoji: '📖' },
+    { path: '/dashboard', label: 'Accueil', icon: HomeIcon },
+    { path: '/my-plants', label: 'Mon Jardin', icon: PlantIcon },
+    { path: '/identify', label: 'Identifier', icon: SearchIcon },
+    { path: '/diagnose', label: 'Diag', icon: MicroscopeIcon },
+    { path: '/byoombase', label: 'Byoombase', icon: BookIcon },
   ];
 
   return (
@@ -42,8 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }}
     >
       {/* Contenu avec padding-bottom pour la bottom nav */}
-      <main className="page-scroll flex-1" style={{ 
-        height: 'calc(100vh - 80px)',
+      <main className="flex-1" style={{ 
         paddingBottom: '80px'
       }}>
         {children}
@@ -61,30 +61,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       >
         {navItems.map((item) => {
           const active = isActive(item.path);
+          const Icon = item.icon;
 
-          // Bouton central surélevé
-          if (item.isCentral) {
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className="flex items-center justify-center rounded-full transition-all active:scale-95"
-                style={{
-                  width: '52px',
-                  height: '52px',
-                  backgroundColor: '#5B8C5A',
-                  marginTop: '-20px',
-                  boxShadow: '0 4px 15px rgba(91, 140, 90, 0.4)',
-                  fontSize: '22px',
-                }}
-                aria-label={item.label}
-              >
-                {item.emoji}
-              </Link>
-            );
-          }
-
-          // Onglets normaux
           return (
             <Link
               key={item.path}
@@ -97,14 +75,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               }}
               aria-label={item.label}
             >
-              <span
-                style={{
-                  fontSize: '24px',
-                  opacity: active ? 1 : 0.4,
-                }}
-              >
-                {item.emoji}
-              </span>
+              <Icon
+                size={28}
+                color={active ? '#5B8C5A' : 'rgba(89, 97, 87, 0.4)'}
+              />
             </Link>
           );
         })}

@@ -36,6 +36,18 @@ export default function ByoomBasePage() {
     loadPlants();
   }, [selectedTag]);
 
+  // Ajouter une classe au body quand un modal est ouvert pour flouter la navbar
+  useEffect(() => {
+    if (showCategoriesModal || showFiltersModal) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showCategoriesModal, showFiltersModal]);
+
   const loadPlants = async () => {
     try {
       let filterQuery = '';
@@ -114,38 +126,38 @@ export default function ByoomBasePage() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}>
-      <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+      <div className="mx-auto max-w-7xl px-3 py-4 md:px-8 md:py-8">
         {/* Header avec fond distinct */}
-        <div className="mb-6 rounded-3xl p-6 md:mb-8 md:p-8" style={{ backgroundColor: '#52414C' }}>
-          <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
-              <BookIcon size={28} color="white" />
+        <div className="mb-4 rounded-2xl p-4 md:mb-8 md:rounded-3xl md:p-8" style={{ backgroundColor: '#52414C' }}>
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl md:h-12 md:w-12 md:rounded-2xl" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)' }}>
+              <BookIcon size={24} color="white" className="md:hidden" />
+              <BookIcon size={28} color="white" className="hidden md:block" />
             </div>
-            <div>
-              <h1 className="font-serif text-3xl font-bold text-white md:text-4xl">
+            <div className="flex-1 min-w-0">
+              <h1 className="font-serif text-2xl font-bold text-white md:text-4xl">
                 ByoomBase
               </h1>
-              <p className="text-sm text-white opacity-90 md:text-base">
-                Catalogue complet de {stats.total} plantes • {stats.families} familles botaniques
+              <p className="text-xs text-white opacity-90 md:text-base">
+                {stats.total} plantes • {stats.families} familles
               </p>
             </div>
           </div>
         </div>
 
-        {/* Barre de recherche avec boutons filtres à droite */}
-        <div className="mb-6 flex gap-3">
-          {/* Barre de recherche */}
-          <div className="flex-1 rounded-2xl bg-white p-4 shadow-sm" style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}>
+        {/* Barre de recherche - pleine largeur sur mobile */}
+        <div className="mb-4 md:mb-6">
+          <div className="rounded-2xl bg-white p-3 shadow-sm md:p-4" style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <SearchIcon size={20} color="#596157" />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 md:left-4">
+                <SearchIcon size={18} color="#596157" className="md:w-5 md:h-5" />
               </div>
               <input
                 type="text"
-                placeholder="Rechercher une plante, une famille, un nom scientifique..."
+                placeholder="Rechercher..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-xl border-none bg-gray-50 px-12 py-3.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#5B8C5A] md:py-4 md:text-base"
+                className="w-full rounded-xl border-none bg-gray-50 px-10 py-2.5 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#5B8C5A] md:px-12 md:py-3.5 md:text-base"
                 style={{
                   color: '#52414C',
                 }}
@@ -153,7 +165,7 @@ export default function ByoomBasePage() {
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-xs font-medium transition-colors hover:bg-gray-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-xs font-medium transition-colors hover:bg-gray-200 md:right-4"
                   style={{ color: '#596157' }}
                 >
                   ✕
@@ -161,51 +173,51 @@ export default function ByoomBasePage() {
               )}
             </div>
           </div>
+        </div>
 
-          {/* Boutons Catégories et Filtres */}
-          <div className="flex gap-3">
-            {/* Bouton Catégories */}
-            <button
-              onClick={() => setShowCategoriesModal(true)}
-              className="flex h-full min-w-[120px] flex-col items-center justify-center rounded-2xl bg-white px-4 py-3 shadow-sm transition-all hover:scale-105 md:px-6"
-              style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}
-            >
-              <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: '#5B8C5A' }}>
-                <PlantIcon size={20} color="white" />
-              </div>
-              <div className="text-xs font-semibold" style={{ color: '#52414C' }}>
-                Catégories
-              </div>
-              {selectedTag !== 'all' && (
-                <div className="mt-1 h-1.5 w-1.5 rounded-full" style={{ backgroundColor: categoryConfig[selectedTag].color }} />
-              )}
-            </button>
+        {/* Boutons Catégories et Filtres - en ligne sur mobile */}
+        <div className="mb-4 grid grid-cols-2 gap-3 md:mb-6 md:flex md:gap-3">
+          {/* Bouton Catégories */}
+          <button
+            onClick={() => setShowCategoriesModal(true)}
+            className="flex flex-col items-center justify-center rounded-2xl bg-white px-3 py-2.5 shadow-sm transition-all active:scale-95 md:min-w-[120px] md:px-4 md:py-3"
+            style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}
+          >
+            <div className="mb-1 flex h-8 w-8 items-center justify-center rounded-xl md:mb-1.5 md:h-10 md:w-10" style={{ backgroundColor: '#5B8C5A' }}>
+              <PlantIcon size={18} color="white" className="md:w-5 md:h-5" />
+            </div>
+            <div className="text-[10px] font-semibold md:text-xs" style={{ color: '#52414C' }}>
+              Catégories
+            </div>
+            {selectedTag !== 'all' && (
+              <div className="mt-0.5 h-1 w-1 rounded-full md:mt-1 md:h-1.5 md:w-1.5" style={{ backgroundColor: categoryConfig[selectedTag].color }} />
+            )}
+          </button>
 
-            {/* Bouton Filtres */}
-            <button
-              onClick={() => setShowFiltersModal(true)}
-              className="flex h-full min-w-[120px] flex-col items-center justify-center rounded-2xl bg-white px-4 py-3 shadow-sm transition-all hover:scale-105 md:px-6"
-              style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}
-            >
-              <div className="mb-1.5 flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: '#CFD186' }}>
-                <SearchIcon size={20} color="#52414C" />
+          {/* Bouton Filtres */}
+          <button
+            onClick={() => setShowFiltersModal(true)}
+            className="flex flex-col items-center justify-center rounded-2xl bg-white px-3 py-2.5 shadow-sm transition-all active:scale-95 md:min-w-[120px] md:px-4 md:py-3"
+            style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}
+          >
+            <div className="mb-1 flex h-8 w-8 items-center justify-center rounded-xl md:mb-1.5 md:h-10 md:w-10" style={{ backgroundColor: '#CFD186' }}>
+              <SearchIcon size={18} color="#52414C" className="md:w-5 md:h-5" />
+            </div>
+            <div className="text-[10px] font-semibold md:text-xs" style={{ color: '#52414C' }}>
+              Filtres
+            </div>
+            {activeFiltersCount > 0 && (
+              <div className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-white md:mt-1 md:h-5 md:w-5 md:text-xs" style={{ backgroundColor: '#5B8C5A' }}>
+                {activeFiltersCount}
               </div>
-              <div className="text-xs font-semibold" style={{ color: '#52414C' }}>
-                Filtres
-              </div>
-              {activeFiltersCount > 0 && (
-                <div className="mt-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#5B8C5A' }}>
-                  {activeFiltersCount}
-                </div>
-              )}
-            </button>
-          </div>
+            )}
+          </button>
         </div>
 
         {/* Modal Catégories */}
         {showCategoriesModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
             onClick={() => setShowCategoriesModal(false)}
           >
@@ -283,7 +295,7 @@ export default function ByoomBasePage() {
         {/* Modal Filtres */}
         {showFiltersModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', backdropFilter: 'blur(4px)' }}
             onClick={() => setShowFiltersModal(false)}
           >
@@ -421,7 +433,7 @@ export default function ByoomBasePage() {
 
         {/* Grille de plantes */}
         {filteredAndSortedPlants.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4">
             {filteredAndSortedPlants.map((plant) => {
               const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
               const imageUrl = plant.cover_image
@@ -435,19 +447,19 @@ export default function ByoomBasePage() {
                 <Link
                   key={plant.id}
                   href={`/byoombase/${plant.id}`}
-                  className="group rounded-2xl bg-white transition-all hover:scale-[1.02] hover:shadow-lg"
+                  className="group rounded-xl bg-white transition-all active:scale-[0.98] md:rounded-2xl md:hover:scale-[1.02] md:hover:shadow-lg"
                   style={{
                     border: '1px solid rgba(0, 0, 0, 0.06)',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
                   }}
                 >
                   {/* Image */}
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-gray-100">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-gray-100 md:rounded-t-2xl">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
                         alt={plant.common_name || 'Plante'}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        className="h-full w-full object-cover transition-transform duration-300 md:group-hover:scale-110"
                       />
                     ) : (
                       <div
@@ -456,12 +468,12 @@ export default function ByoomBasePage() {
                           background: 'linear-gradient(135deg, #5B8C5A 0%, #CFD186 100%)',
                         }}
                       >
-                        <span className="text-6xl">🌿</span>
+                        <span className="text-4xl md:text-6xl">🌿</span>
                       </div>
                     )}
                     {/* Badge difficulté */}
                     <div
-                      className="absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold"
+                      className="absolute right-2 top-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold md:right-3 md:top-3 md:px-2.5 md:py-1 md:text-xs"
                       style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
                         color: '#52414C',
@@ -473,36 +485,37 @@ export default function ByoomBasePage() {
                   </div>
 
                   {/* Contenu */}
-                  <div className="p-4">
-                    <h3 className="mb-1 font-serif text-lg font-bold" style={{ color: '#52414C' }}>
+                  <div className="p-2.5 md:p-4">
+                    <h3 className="mb-0.5 line-clamp-1 font-serif text-sm font-bold md:mb-1 md:text-lg" style={{ color: '#52414C' }}>
                       {plant.common_name || 'Sans nom'}
                     </h3>
-                    <p className="mb-3 text-xs italic" style={{ color: '#596157' }}>
+                    <p className="mb-1.5 line-clamp-1 text-[10px] italic md:mb-3 md:text-xs" style={{ color: '#596157' }}>
                       {plant.scientific_name}
                     </p>
 
                     {/* Famille */}
                     {plant.family && (
-                      <div className="mb-3">
-                        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: '#5B8C5A' }}>
+                      <div className="mb-1.5 md:mb-3">
+                        <span className="text-[9px] font-medium uppercase tracking-wide md:text-xs" style={{ color: '#5B8C5A' }}>
                           {plant.family}
                         </span>
                       </div>
                     )}
 
                     {/* Difficulté */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2">
                       <div className="flex gap-0.5">
                         {[1, 2, 3, 4, 5].map((level) => (
                           <StarIcon
                             key={level}
-                            size={14}
+                            size={10}
                             color="#F59E0B"
                             filled={level <= difficulty}
+                            className="md:w-3.5 md:h-3.5"
                           />
                         ))}
                       </div>
-                      <span className="text-xs font-medium" style={{ color: '#596157' }}>
+                      <span className="text-[9px] font-medium md:text-xs" style={{ color: '#596157' }}>
                         {['Très facile', 'Facile', 'Moyen', 'Difficile', 'Expert'][difficulty - 1]}
                       </span>
                     </div>

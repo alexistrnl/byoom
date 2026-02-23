@@ -140,31 +140,47 @@
     display: none; /* Chrome, Safari, Opera */
   }
   
-  /* Bloquer zoom tactile */
-  html, body {
-    touch-action: pan-x pan-y;
-    -ms-touch-action: pan-x pan-y;
-    user-select: none;
-    -webkit-user-select: none;
+  /* Bloquer zoom tactile - uniquement sur mobile */
+  @media (hover: none) and (pointer: coarse) {
+    html, body {
+      touch-action: pan-x pan-y;
+      -ms-touch-action: pan-x pan-y;
+    }
+    
+    /* Bloquer zoom sur double tap - uniquement sur mobile */
+    *:not(input):not(textarea):not([contenteditable]) {
+      touch-action: manipulation;
+    }
   }
   
-  /* Bloquer zoom sur double tap */
-  *:not(input):not(textarea):not([contenteditable]) {
-    touch-action: manipulation;
+  html, body {
+    user-select: none;
+    -webkit-user-select: none;
   }
   
   /* Scroll fluide avec overscroll élastique natif iOS */
   body {
     @apply bg-background text-foreground;
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Overscroll uniquement sur mobile */
+  @media (hover: none) and (pointer: coarse) {
+    body {
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+    }
   }
   
   /* Inputs et textarea autorisent la sélection */
   input, textarea, [contenteditable] {
     user-select: text;
     -webkit-user-select: text;
-    touch-action: auto;
+  }
+  
+  @media (hover: none) and (pointer: coarse) {
+    input, textarea, [contenteditable] {
+      touch-action: auto;
+    }
   }
   
   /* Réactiver la sélection uniquement sur les champs de saisie */
@@ -199,11 +215,14 @@
     overscroll-behavior-y: contain;
   }
   
-  /* Toutes les pages scrollables */
-  .page-scroll {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+  /* Toutes les pages scrollables - uniquement sur mobile */
+  @media (hover: none) and (pointer: coarse) {
+    .page-scroll {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      height: calc(100vh - 80px);
+    }
   }
 }
 
@@ -324,4 +343,11 @@ body > a[style*="position:fixed"][style*="bottom"] {
 /* Masquer la navbar quand le chat est ouvert */
 body.chat-open .bottom-nav {
   display: none !important;
+}
+
+/* Flouter la navbar quand un modal est ouvert */
+body.modal-open .bottom-nav {
+  filter: blur(4px);
+  opacity: 0.6;
+  pointer-events: none;
 }

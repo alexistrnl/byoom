@@ -186,11 +186,13 @@ export function BotanicAssistant() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed top-4 right-4 z-[1000] flex h-[60px] w-[60px] items-center justify-center rounded-full text-2xl text-white transition-all hover:scale-110 active:scale-95"
+          className="fixed z-[1000] flex h-[60px] w-[60px] items-center justify-center rounded-full text-2xl text-white transition-all hover:scale-110 active:scale-95"
           style={{
             backgroundColor: '#5B8C5A',
             boxShadow: '0 4px 20px rgba(91, 140, 90, 0.4)',
             animation: 'pulse 2s ease-in-out infinite',
+            bottom: 'calc(80px + 1rem)',
+            right: '1rem',
           }}
           aria-label="Ouvrir l'assistant botanique"
         >
