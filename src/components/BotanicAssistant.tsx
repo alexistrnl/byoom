@@ -107,6 +107,18 @@ export function BotanicAssistant() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  // Masquer la navbar quand le chat est ouvert
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('chat-open');
+    } else {
+      document.body.classList.remove('chat-open');
+    }
+    return () => {
+      document.body.classList.remove('chat-open');
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();

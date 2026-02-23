@@ -46,8 +46,10 @@ export default function RootLayout({
       <head>
         <meta 
           name="viewport" 
-          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"
         />
+        <meta name="screen-orientation" content="portrait"/>
+        <meta name="x5-orientation" content="portrait"/>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#5B8C5A" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -55,6 +57,21 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Byoom" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          document.addEventListener('touchmove', function(e) {
+            if (e.touches.length > 1) {
+              e.preventDefault();
+            }
+          }, { passive: false });
+          
+          document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+          }, { passive: false });
+          
+          document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+          }, { passive: false });
+        ` }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

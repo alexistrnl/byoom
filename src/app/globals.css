@@ -140,9 +140,17 @@
     display: none; /* Chrome, Safari, Opera */
   }
   
-  /* Désactiver le zoom par pinch */
-  html {
+  /* Bloquer zoom tactile */
+  html, body {
     touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Bloquer zoom sur double tap */
+  *:not(input):not(textarea):not([contenteditable]) {
+    touch-action: manipulation;
   }
   
   /* Scroll fluide avec overscroll élastique natif iOS */
@@ -152,10 +160,14 @@
     -webkit-overflow-scrolling: touch;
   }
   
+  /* Inputs et textarea autorisent la sélection */
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
+    touch-action: auto;
+  }
+  
   /* Réactiver la sélection uniquement sur les champs de saisie */
-  input,
-  textarea,
-  [contenteditable],
   [contenteditable] * {
     -webkit-user-select: text;
     user-select: text;
@@ -306,5 +318,10 @@ a[href*="vercel.com"] svg {
 /* Masquer tout élément positionné en bas à gauche qui pourrait être le logo Next.js */
 body > a[style*="position: fixed"][style*="bottom"],
 body > a[style*="position:fixed"][style*="bottom"] {
+  display: none !important;
+}
+
+/* Masquer la navbar quand le chat est ouvert */
+body.chat-open .bottom-nav {
   display: none !important;
 }

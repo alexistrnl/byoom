@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Bottom Navigation Bar */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-[100] flex items-center justify-around border-t bg-white"
+        className="bottom-nav fixed bottom-0 left-0 right-0 z-[100] flex items-center justify-around border-t bg-white"
         style={{
           minHeight: '80px',
           padding: '12px 1rem calc(12px + env(safe-area-inset-bottom))',
@@ -89,9 +89,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Link
               key={item.path}
               href={item.path}
-              className="flex flex-col items-center gap-0.5 transition-all active:scale-95"
+              className="flex items-center justify-center transition-all active:scale-95"
               style={{
-                padding: active ? '4px 12px' : '4px',
+                padding: active ? '8px 16px' : '8px',
                 borderRadius: active ? '12px' : '0',
                 backgroundColor: active ? 'rgba(91, 140, 90, 0.12)' : 'transparent',
               }}
@@ -99,19 +99,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             >
               <span
                 style={{
-                  fontSize: '22px',
+                  fontSize: '24px',
                   opacity: active ? 1 : 0.4,
                 }}
               >
                 {item.emoji}
-              </span>
-              <span
-                className="text-[10px] font-medium"
-                style={{
-                  color: active ? '#5B8C5A' : 'rgba(89, 97, 87, 0.4)',
-                }}
-              >
-                {item.label}
               </span>
             </Link>
           );
