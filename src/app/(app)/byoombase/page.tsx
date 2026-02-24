@@ -8,10 +8,10 @@ import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { PremiumGate } from '@/components/PremiumGate';
 import { isPremium } from '@/lib/subscription';
-import { SearchIcon, StarIcon, PlantIcon, BookIcon, SunIcon, WaterIcon, CompatibilityIcon } from '@/components/Icons';
+import { SearchIcon, PlantIcon, BookIcon, SunIcon, WaterIcon, CompatibilityIcon } from '@/components/Icons';
 import type { Plant } from '@/lib/types/pocketbase';
 
-type SortOption = 'name' | 'difficulty' | 'family' | 'newest';
+type SortOption = 'name' | 'family' | 'newest';
 type FilterTag = 'all' | 'intérieur' | 'extérieur' | 'succulent' | 'aromatique' | 'fleurie';
 
 const categoryConfig: Record<FilterTag, { label: string; icon: React.ComponentType<{ size?: number; color?: string }>; color: string; bgColor: string }> = {
@@ -30,7 +30,6 @@ export default function ByoomBasePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<FilterTag>('all');
   const [sortBy, setSortBy] = useState<SortOption>('name');
-  const [difficultyFilter, setDifficultyFilter] = useState<number | null>(null);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
 
@@ -88,18 +87,11 @@ export default function ByoomBasePage() {
       );
     }
 
-    // Filtre par difficulté
-    if (difficultyFilter !== null) {
-      filtered = filtered.filter((plant) => Number(plant.difficulty) === difficultyFilter);
-    }
-
     // Tri
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'name':
           return (a.common_name || '').localeCompare(b.common_name || '');
-        case 'difficulty':
-          return Number(a.difficulty) - Number(b.difficulty);
         case 'family':
           return (a.family || '').localeCompare(b.family || '');
         case 'newest':
@@ -110,7 +102,7 @@ export default function ByoomBasePage() {
     });
 
     return filtered;
-  }, [plants, searchQuery, difficultyFilter, sortBy]);
+  }, [plants, searchQuery, sortBy]);
 
   // Statistiques
   const stats = useMemo(() => {
@@ -122,7 +114,7 @@ export default function ByoomBasePage() {
   }, [plants, filteredAndSortedPlants]);
 
   // Compteur de filtres actifs
-  const activeFiltersCount = (difficultyFilter !== null ? 1 : 0) + (searchQuery ? 1 : 0);
+  const activeFiltersCount = (searchQuery ? 1 : 0);
 
   if (loading) {
     return <LoadingSpinner message="Chargement de la ByoomBase..." />;
@@ -343,57 +335,15 @@ export default function ByoomBasePage() {
               </div>
 
               <div className="space-y-6">
-                {/* Difficulté */}
-                <div className="rounded-xl p-4" style={{ backgroundColor: '#F5F0E8' }}>
-                  <label className="mb-3 block text-sm font-semibold uppercase tracking-wide" style={{ color: '#52414C' }}>
-                    Difficulté
-                  </label>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setDifficultyFilter(null)}
-                      className="w-full rounded-lg border-none px-4 py-3 text-left text-sm font-medium transition-all"
-                      style={{
-                        backgroundColor: difficultyFilter === null ? '#5B8C5A' : 'white',
-                        color: difficultyFilter === null ? 'white' : '#52414C',
-                        boxShadow: difficultyFilter === null ? '0 2px 8px rgba(91, 140, 90, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.04)',
-                      }}
-                    >
-                      Toutes
-                    </button>
-                    {[1, 2, 3, 4, 5].map((level) => (
-                      <button
-                        key={level}
-                        onClick={() => setDifficultyFilter(level)}
-                        className="w-full rounded-lg border-none px-4 py-3 text-left text-sm font-medium transition-all"
-                        style={{
-                          backgroundColor: difficultyFilter === level ? '#5B8C5A' : 'white',
-                          color: difficultyFilter === level ? 'white' : '#52414C',
-                          boxShadow: difficultyFilter === level ? '0 2px 8px rgba(91, 140, 90, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.04)',
-                        }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3, 4, 5].map((l) => (
-                              <StarIcon key={l} size={14} color={difficultyFilter === level ? 'white' : '#F59E0B'} filled={l <= level} />
-                            ))}
-                          </div>
-                          <span>{['Très facile', 'Facile', 'Moyen', 'Difficile', 'Expert'][level - 1]}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Tri */}
                 <div className="rounded-xl p-4" style={{ backgroundColor: '#F5F0E8' }}>
                   <label className="mb-3 block text-sm font-semibold uppercase tracking-wide" style={{ color: '#52414C' }}>
                     Trier par
                   </label>
                   <div className="space-y-2">
-                    {(['name', 'difficulty', 'family', 'newest'] as SortOption[]).map((option) => {
+                    {(['name', 'family', 'newest'] as SortOption[]).map((option) => {
                       const labels: Record<SortOption, string> = {
                         name: 'Nom (A-Z)',
-                        difficulty: 'Difficulté',
                         family: 'Famille',
                         newest: 'Plus récentes',
                       };
@@ -451,12 +401,9 @@ export default function ByoomBasePage() {
           <div className="grid grid-cols-2 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4">
             {filteredAndSortedPlants.map((plant) => {
               const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
-              const imageUrl = plant.cover_image
-                ? plant.cover_image.startsWith('http')
-                  ? plant.cover_image
-                  : `${pbUrl}/api/files/plants/${plant.id}/${plant.cover_image}`
+              const imageUrl = plant.cover_image 
+                ? `${pbUrl}/api/files/plants/${plant.id}/${plant.cover_image}`
                 : null;
-              const difficulty = Number(plant.difficulty) || 1;
 
               return (
                 <Link
@@ -486,17 +433,6 @@ export default function ByoomBasePage() {
                         <span className="text-4xl md:text-6xl">🌿</span>
                       </div>
                     )}
-                    {/* Badge difficulté */}
-                    <div
-                      className="absolute right-2 top-2 rounded-full px-1.5 py-0.5 text-[10px] font-semibold md:right-3 md:top-3 md:px-2.5 md:py-1 md:text-xs"
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        color: '#52414C',
-                        backdropFilter: 'blur(8px)',
-                      }}
-                    >
-                      {difficulty}/5
-                    </div>
                   </div>
 
                   {/* Contenu */}
@@ -504,36 +440,11 @@ export default function ByoomBasePage() {
                     <h3 className="mb-0.5 line-clamp-1 font-serif text-sm font-bold md:mb-1 md:text-lg" style={{ color: '#52414C' }}>
                       {plant.common_name || 'Sans nom'}
                     </h3>
-                    <p className="mb-1.5 line-clamp-1 text-[10px] italic md:mb-3 md:text-xs" style={{ color: '#596157' }}>
-                      {plant.scientific_name}
-                    </p>
-
-                    {/* Famille */}
                     {plant.family && (
-                      <div className="mb-1.5 md:mb-3">
-                        <span className="text-[9px] font-medium uppercase tracking-wide md:text-xs" style={{ color: '#5B8C5A' }}>
-                          {plant.family}
-                        </span>
-                      </div>
+                      <p className="text-[9px] font-medium uppercase tracking-wide md:text-xs" style={{ color: '#5B8C5A' }}>
+                        {plant.family}
+                      </p>
                     )}
-
-                    {/* Difficulté */}
-                    <div className="flex items-center gap-1 md:gap-2">
-                      <div className="flex gap-0.5">
-                        {[1, 2, 3, 4, 5].map((level) => (
-                          <StarIcon
-                            key={level}
-                            size={10}
-                            color="#F59E0B"
-                            filled={level <= difficulty}
-                            className="md:w-3.5 md:h-3.5"
-                          />
-                        ))}
-                      </div>
-                      <span className="text-[9px] font-medium md:text-xs" style={{ color: '#596157' }}>
-                        {['Très facile', 'Facile', 'Moyen', 'Difficile', 'Expert'][difficulty - 1]}
-                      </span>
-                    </div>
                   </div>
                 </Link>
               );

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlantIcon, StarIcon } from '@/components/Icons';
+import { PlantIcon } from '@/components/Icons';
 import type { Plant } from '@/lib/types/pocketbase';
 
 export default function AdminPlantsPage() {
@@ -68,22 +68,11 @@ export default function AdminPlantsPage() {
       common_name: plant.common_name || '',
       scientific_name: plant.scientific_name || '',
       family: plant.family || '',
-      brief_description: (plant as any).brief_description || '',
       history: (plant as any).history || '',
       uses: (plant as any).uses || '',
-      difficulty: plant.difficulty || 1,
-      watering_frequency: plant.watering_frequency || '',
-      light_needs: plant.light_needs || 'moyen',
-      soil_type: plant.soil_type || '',
-      temperature_min: plant.temperature_min || 15,
-      temperature_max: plant.temperature_max || 25,
-      humidity: plant.humidity || 'moyen',
-      edible: plant.edible || false,
-      toxic_to_pets: plant.toxic_to_pets || false,
-      toxic_to_humans: plant.toxic_to_humans || false,
-      bonsai_compatible: plant.bonsai_compatible || false,
-      fun_facts: JSON.stringify((plant as any).fun_facts || []),
-      tags: JSON.stringify(plant.tags || []),
+      fun_facts: typeof (plant as any).fun_facts === 'string' 
+        ? (plant as any).fun_facts 
+        : (plant as any).fun_facts || '',
     });
     setShowForm(true);
   };
@@ -94,24 +83,52 @@ export default function AdminPlantsPage() {
       common_name: '',
       scientific_name: '',
       family: '',
-      brief_description: '',
       history: '',
       uses: '',
-      difficulty: 1,
-      watering_frequency: '',
-      light_needs: 'moyen',
-      soil_type: '',
-      temperature_min: 15,
-      temperature_max: 25,
-      humidity: 'moyen',
-      edible: false,
-      toxic_to_pets: false,
-      toxic_to_humans: false,
-      bonsai_compatible: false,
-      fun_facts: '[]',
-      tags: '[]',
+      fun_facts: '',
     });
     setShowForm(true);
+  };
+
+  const compressImage = async (file: File, maxSizeMB = 0.5): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const img = new Image();
+      
+      img.onload = () => {
+        // Redimensionner si trop grande
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1200;
+        
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = (height / width) * maxDim;
+            width = maxDim;
+          } else {
+            width = (width / height) * maxDim;
+            height = maxDim;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+              type: 'image/jpeg'
+            }));
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', 0.7); // qualité 70%
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -129,7 +146,9 @@ export default function AdminPlantsPage() {
 
       const coverImageInput = document.getElementById('cover_image') as HTMLInputElement;
       if (coverImageInput?.files?.[0]) {
-        formDataToSend.append('cover_image', coverImageInput.files[0]);
+        const compressed = await compressImage(coverImageInput.files[0]);
+        console.log('Image compressée:', compressed.size, 'bytes');
+        formDataToSend.append('cover_image', compressed);
       }
 
       const url = editingPlant
@@ -281,31 +300,6 @@ export default function AdminPlantsPage() {
                       className="w-full rounded-lg border border-gray-300 px-4 py-2"
                     />
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Difficulté (1-5)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="5"
-                      value={formData.difficulty}
-                      onChange={(e) => setFormData({ ...formData, difficulty: parseInt(e.target.value) })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                    Description brève
-                  </label>
-                  <textarea
-                    value={formData.brief_description}
-                    onChange={(e) => setFormData({ ...formData, brief_description: e.target.value })}
-                    rows={3}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                  />
                 </div>
 
                 <div>
@@ -322,7 +316,7 @@ export default function AdminPlantsPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                    Utilisations (médicinale, culinaire, décorative)
+                    Utilité
                   </label>
                   <textarea
                     value={formData.uses}
@@ -332,141 +326,16 @@ export default function AdminPlantsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Arrosage
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.watering_frequency}
-                      onChange={(e) => setFormData({ ...formData, watering_frequency: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Lumière
-                    </label>
-                    <select
-                      value={formData.light_needs}
-                      onChange={(e) => setFormData({ ...formData, light_needs: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    >
-                      <option value="faible">Faible</option>
-                      <option value="moyen">Moyen</option>
-                      <option value="fort">Fort</option>
-                      <option value="direct">Direct</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Terreau
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.soil_type}
-                      onChange={(e) => setFormData({ ...formData, soil_type: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Humidité
-                    </label>
-                    <select
-                      value={formData.humidity}
-                      onChange={(e) => setFormData({ ...formData, humidity: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    >
-                      <option value="faible">Faible</option>
-                      <option value="moyen">Moyen</option>
-                      <option value="élevé">Élevé</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Température min (°C)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.temperature_min}
-                      onChange={(e) => setFormData({ ...formData, temperature_min: parseInt(e.target.value) })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                      Température max (°C)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.temperature_max}
-                      onChange={(e) => setFormData({ ...formData, temperature_max: parseInt(e.target.value) })}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    />
-                  </div>
-                </div>
-
                 <div>
                   <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                    Fun Facts (JSON array, ex: ["Fact 1", "Fact 2"])
+                    Fun Facts
                   </label>
                   <textarea
                     value={formData.fun_facts}
                     onChange={(e) => setFormData({ ...formData, fun_facts: e.target.value })}
-                    rows={2}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 font-mono text-sm"
-                    placeholder='["Fact 1", "Fact 2"]'
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
-                    Tags (JSON array ou séparés par virgules)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                    rows={4}
                     className="w-full rounded-lg border border-gray-300 px-4 py-2"
-                    placeholder='["intérieur", "fleurie"] ou intérieur, fleurie'
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.edible}
-                      onChange={(e) => setFormData({ ...formData, edible: e.target.checked })}
-                    />
-                    <span className="text-sm" style={{ color: '#52414C' }}>Comestible</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.toxic_to_pets}
-                      onChange={(e) => setFormData({ ...formData, toxic_to_pets: e.target.checked })}
-                    />
-                    <span className="text-sm" style={{ color: '#52414C' }}>Toxique animaux</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.toxic_to_humans}
-                      onChange={(e) => setFormData({ ...formData, toxic_to_humans: e.target.checked })}
-                    />
-                    <span className="text-sm" style={{ color: '#52414C' }}>Toxique humains</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.bonsai_compatible}
-                      onChange={(e) => setFormData({ ...formData, bonsai_compatible: e.target.checked })}
-                    />
-                    <span className="text-sm" style={{ color: '#52414C' }}>Bonsaï</span>
-                  </label>
                 </div>
 
                 <div>
@@ -541,16 +410,11 @@ export default function AdminPlantsPage() {
                       <p className="text-xs italic" style={{ color: '#596157' }}>
                         {plant.scientific_name}
                       </p>
-                      <div className="mt-1 flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((level) => (
-                          <StarIcon
-                            key={level}
-                            size={12}
-                            color="#F59E0B"
-                            filled={level <= (plant.difficulty || 1)}
-                          />
-                        ))}
-                      </div>
+                      {plant.family && (
+                        <p className="mt-1 text-xs" style={{ color: '#596157' }}>
+                          {plant.family}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">

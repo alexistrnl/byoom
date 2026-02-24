@@ -37,66 +37,57 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const formData = await request.formData();
     const adminPb = await getAdminClient();
-
-    // Préparer les données
-    const data: any = {};
-
+    
+    const formData = await request.formData();
+    
+    console.log('PATCH plant id:', id);
+    console.log('FormData keys:', [...formData.keys()]);
+    
+    // Construire l'objet de mise à jour
+    const updateData: Record<string, any> = {};
+    
     // Champs texte
-    if (formData.has('common_name')) data.common_name = formData.get('common_name') as string;
-    if (formData.has('scientific_name')) data.scientific_name = formData.get('scientific_name') as string;
-    if (formData.has('family')) data.family = formData.get('family') as string;
-    if (formData.has('brief_description')) data.brief_description = formData.get('brief_description') as string;
-    if (formData.has('history')) data.history = formData.get('history') as string;
-    if (formData.has('uses')) data.uses = formData.get('uses') as string;
-    if (formData.has('watering_frequency')) data.watering_frequency = formData.get('watering_frequency') as string;
-    if (formData.has('light_needs')) data.light_needs = formData.get('light_needs') as string;
-    if (formData.has('soil_type')) data.soil_type = formData.get('soil_type') as string;
-    if (formData.has('humidity')) data.humidity = formData.get('humidity') as string;
-
-    // Champs numériques
-    if (formData.has('difficulty')) data.difficulty = parseInt(formData.get('difficulty') as string);
-    if (formData.has('temperature_min')) data.temperature_min = parseInt(formData.get('temperature_min') as string);
-    if (formData.has('temperature_max')) data.temperature_max = parseInt(formData.get('temperature_max') as string);
-
-    // Champs booléens
-    if (formData.has('edible')) data.edible = formData.get('edible') === 'true';
-    if (formData.has('toxic_to_pets')) data.toxic_to_pets = formData.get('toxic_to_pets') === 'true';
-    if (formData.has('toxic_to_humans')) data.toxic_to_humans = formData.get('toxic_to_humans') === 'true';
-    if (formData.has('bonsai_compatible')) data.bonsai_compatible = formData.get('bonsai_compatible') === 'true';
-
-    // Parse fun_facts
-    if (formData.has('fun_facts')) {
-      const funFactsStr = formData.get('fun_facts') as string;
-      try {
-        data.fun_facts = JSON.parse(funFactsStr);
-      } catch {
-        data.fun_facts = [];
+    const textFields = [
+      'common_name', 'scientific_name', 'family', 
+      'history', 'uses', 'fun_facts'
+    ];
+    
+    for (const field of textFields) {
+      const value = formData.get(field);
+      if (value !== null) {
+        updateData[field] = value as string;
       }
     }
-
-    // Parse tags
-    if (formData.has('tags')) {
-      const tagsStr = formData.get('tags') as string;
-      try {
-        data.tags = JSON.parse(tagsStr);
-      } catch {
-        data.tags = tagsStr.split(',').map((t) => t.trim()).filter(Boolean);
-      }
+    
+    // Fichier image
+    const coverImage = formData.get('cover_image');
+    if (coverImage && coverImage instanceof File && coverImage.size > 0) {
+      console.log('Image détectée:', coverImage.name, coverImage.size);
+      updateData['cover_image'] = coverImage;
     }
-
-    // Gérer l'image (seulement si une nouvelle image est fournie)
-    const coverImage = formData.get('cover_image') as File | null;
-    if (coverImage && coverImage.size > 0) {
-      data.cover_image = coverImage;
+    
+    console.log('Update data keys:', Object.keys(updateData));
+    
+    // Utiliser le FormData natif de PocketBase pour les fichiers
+    const pbFormData = new FormData();
+    for (const [key, value] of Object.entries(updateData)) {
+      pbFormData.append(key, value);
     }
-
-    const plant = await adminPb.collection('plants').update(id, data);
-
-    return NextResponse.json({ plant });
+    
+    const updated = await adminPb.collection('plants').update(
+      id, 
+      pbFormData,
+      { requestKey: null }
+    );
+    
+    console.log('✅ Plant mise à jour:', updated.id);
+    return NextResponse.json({ plant: updated });
+    
   } catch (error: any) {
-    console.error('Erreur admin plants PATCH:', error);
+    console.error('Erreur PATCH plant:', error);
+    console.error('Message:', error.message);
+    console.error('Response:', JSON.stringify(error.response));
     return NextResponse.json(
       { error: error.message || 'Erreur serveur' },
       { status: 500 }

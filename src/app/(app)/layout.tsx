@@ -43,15 +43,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         backgroundColor: '#F5F0E8',
       }}
     >
-      {/* Contenu avec padding-bottom pour la bottom nav */}
+      {/* Contenu avec padding-bottom pour la bottom nav (sauf admin) */}
       <main className="flex-1" style={{ 
-        paddingBottom: '80px'
+        paddingBottom: pathname.startsWith('/admin') ? '0' : '80px'
       }}>
         {children}
       </main>
 
-      {/* Badge Premium si pas premium */}
-      {user && !isPremium(user) && pathname !== '/pricing' && (
+      {/* Badge Premium si pas premium (masqué sur admin) */}
+      {user && !isPremium(user) && pathname !== '/pricing' && !pathname.startsWith('/admin') && (
         <Link
           href="/pricing"
           className="fixed top-4 right-4 z-50 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95"
@@ -64,40 +64,42 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Link>
       )}
 
-      {/* Bottom Navigation Bar */}
-      <nav
-        className="bottom-nav fixed bottom-0 left-0 right-0 z-[100] flex items-center justify-around border-t bg-white"
-        style={{
-          minHeight: '80px',
-          padding: '12px 1rem calc(12px + env(safe-area-inset-bottom))',
-          borderTop: '1px solid rgba(82, 65, 76, 0.08)',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.06)',
-        }}
-      >
-        {navItems.map((item) => {
-          const active = isActive(item.path);
-          const Icon = item.icon;
+      {/* Bottom Navigation Bar - Masquée pour les pages admin */}
+      {!pathname.startsWith('/admin') && (
+        <nav
+          className="bottom-nav fixed bottom-0 left-0 right-0 z-[100] flex items-center justify-around border-t bg-white"
+          style={{
+            minHeight: '80px',
+            padding: '12px 1rem calc(12px + env(safe-area-inset-bottom))',
+            borderTop: '1px solid rgba(82, 65, 76, 0.08)',
+            boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.06)',
+          }}
+        >
+          {navItems.map((item) => {
+            const active = isActive(item.path);
+            const Icon = item.icon;
 
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className="flex items-center justify-center transition-all active:scale-95"
-              style={{
-                padding: active ? '8px 16px' : '8px',
-                borderRadius: active ? '12px' : '0',
-                backgroundColor: active ? 'rgba(91, 140, 90, 0.12)' : 'transparent',
-              }}
-              aria-label={item.label}
-            >
-              <Icon
-                size={28}
-                color={active ? '#5B8C5A' : 'rgba(89, 97, 87, 0.4)'}
-              />
-            </Link>
-          );
-        })}
-      </nav>
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className="flex items-center justify-center transition-all active:scale-95"
+                style={{
+                  padding: active ? '8px 16px' : '8px',
+                  borderRadius: active ? '12px' : '0',
+                  backgroundColor: active ? 'rgba(91, 140, 90, 0.12)' : 'transparent',
+                }}
+                aria-label={item.label}
+              >
+                <Icon
+                  size={28}
+                  color={active ? '#5B8C5A' : 'rgba(89, 97, 87, 0.4)'}
+                />
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }
