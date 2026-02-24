@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
       const subscriptionId = session.subscription;
       
       if (userId && subscriptionId) {
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const endDate = new Date(subscription.current_period_end * 1000);
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
+        const endDate = new Date((subscription.current_period_end as number) * 1000);
         
         console.log('Mise à jour user:', userId, 'avec subscription:', subscriptionId);
         const updated = await adminPb.collection('users').update(userId, {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       console.log('Subscription updated, userId:', userId, 'status:', subscription.status);
       
       if (userId) {
-        const endDate = new Date(subscription.current_period_end * 1000);
+        const endDate = new Date((subscription.current_period_end as number) * 1000);
         await adminPb.collection('users').update(userId, {
           subscription_status: subscription.status === 'active' 
             ? 'active' : 'expired',
