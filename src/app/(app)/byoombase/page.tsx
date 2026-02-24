@@ -459,15 +459,14 @@ export default function ByoomBasePage() {
               Aucune plante trouvée
             </h2>
             <p className="text-sm" style={{ color: '#596157' }}>
-              {searchQuery || difficultyFilter !== null
+              {searchQuery
                 ? 'Essayez de modifier vos critères de recherche'
                 : 'Aucune plante dans cette catégorie'}
             </p>
-            {(searchQuery || difficultyFilter !== null) && (
+            {searchQuery && (
               <button
                 onClick={() => {
                   setSearchQuery('');
-                  setDifficultyFilter(null);
                 }}
                 className="mt-4 rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105"
                 style={{ backgroundColor: '#5B8C5A' }}

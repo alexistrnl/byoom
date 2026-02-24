@@ -2,11 +2,11 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlantIcon } from '@/components/Icons';
+import { PlantIcon, SearchIcon } from '@/components/Icons';
 import type { Plant } from '@/lib/types/pocketbase';
 
 export default function AdminPlantsPage() {
@@ -20,6 +20,7 @@ export default function AdminPlantsPage() {
   const [uploading, setUploading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     // Attendre que le loading soit terminé
@@ -215,11 +216,31 @@ export default function AdminPlantsPage() {
 
   const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
+  // Filtrer les plantes selon la recherche
+  const filteredPlants = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return plants;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    return plants.filter((plant) => {
+      const commonName = plant.common_name?.toLowerCase() || '';
+      const scientificName = plant.scientific_name?.toLowerCase() || '';
+      const family = plant.family?.toLowerCase() || '';
+      
+      return (
+        commonName.includes(query) ||
+        scientificName.includes(query) ||
+        family.includes(query)
+      );
+    });
+  }, [plants, searchQuery]);
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}>
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="mb-2 font-serif text-3xl font-bold" style={{ color: '#52414C' }}>
               Administration - Plantes
@@ -235,6 +256,36 @@ export default function AdminPlantsPage() {
           >
             + Ajouter une plante
           </button>
+        </div>
+
+        {/* Barre de recherche */}
+        <div className="mb-6">
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <SearchIcon size={20} color="#596157" />
+            </div>
+            <input
+              type="text"
+              placeholder="Rechercher une plante (nom, scientifique, famille)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-gray-300 bg-white px-12 py-3 text-sm focus:border-5B8C5A focus:outline-none focus:ring-2 focus:ring-5B8C5A focus:ring-opacity-20"
+              style={{ color: '#52414C' }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="mt-2 text-sm" style={{ color: '#596157' }}>
+              {filteredPlants.length} résultat{filteredPlants.length > 1 ? 's' : ''} trouvé{filteredPlants.length > 1 ? 's' : ''}
+            </p>
+          )}
         </div>
 
         {/* Formulaire modal */}
@@ -375,8 +426,22 @@ export default function AdminPlantsPage() {
 
         {/* Liste des plantes */}
         <div className="rounded-2xl bg-white p-6 shadow-sm" style={{ boxShadow: '0 2px 12px rgba(0, 0, 0, 0.06)' }}>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {plants.map((plant) => {
+          {loadingPlants ? (
+            <div className="flex items-center justify-center py-12">
+              <LoadingSpinner message="Chargement des plantes..." />
+            </div>
+          ) : filteredPlants.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="text-lg font-semibold" style={{ color: '#52414C' }}>
+                {searchQuery ? 'Aucune plante trouvée' : 'Aucune plante'}
+              </p>
+              <p className="mt-2 text-sm" style={{ color: '#596157' }}>
+                {searchQuery ? 'Essayez une autre recherche' : 'Commencez par ajouter une plante'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredPlants.map((plant) => {
               const imageUrl = plant.cover_image
                 ? `${pbUrl}/api/files/plants/${plant.id}/${plant.cover_image}`
                 : null;
@@ -435,11 +500,12 @@ export default function AdminPlantsPage() {
                   </div>
                 </div>
               );
-            })}
-          </div>
+              })}
+            </div>
+          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
+          {/* Pagination - Masquée pendant la recherche */}
+          {!searchQuery && totalPages > 1 && (
             <div className="mt-6 flex justify-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
