@@ -3,18 +3,33 @@ import { stripe } from '@/lib/stripe';
 import { getAdminClient } from '@/lib/pocketbase';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+// IMPORTANT : Dans Next.js App Router, pour lire le raw body
+// dans un webhook Stripe, il faut désactiver le body parsing
+// La lecture doit être exactement :
 
 export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const sig = request.headers.get('stripe-signature')!;
+  const buf = await request.arrayBuffer();
+  const body = Buffer.from(buf).toString('utf-8');
+  const sig = request.headers.get('stripe-signature');
+  
+  console.log('Webhook reçu, body length:', body.length);
+  console.log('Sig:', sig?.substring(0, 20));
+  
+  if (!sig) {
+    return NextResponse.json({ error: 'No signature' }, { status: 400 });
+  }
 
   let event;
   try {
     event = stripe.webhooks.constructEvent(
-      body, sig, process.env.STRIPE_WEBHOOK_SECRET!
+      body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err: any) {
-    console.error('Erreur vérification signature webhook:', err.message);
+    console.error('Webhook signature error:', err.message);
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
