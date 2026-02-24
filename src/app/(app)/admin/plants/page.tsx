@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -10,6 +10,9 @@ import { PlantIcon, SearchIcon } from '@/components/Icons';
 import type { Plant } from '@/lib/types/pocketbase';
 
 export default function AdminPlantsPage() {
+  // ============================================
+  // 1. TOUS LES HOOKS EN PREMIER - jamais de return avant eux
+  // ============================================
   const { pb, user, loading } = usePocketBase();
   const router = useRouter();
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -21,6 +24,46 @@ export default function AdminPlantsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Filtrer les plantes selon la recherche (useMemo doit être avant les returns)
+  const filteredPlants = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return plants;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    return plants.filter((plant) => {
+      const commonName = plant.common_name?.toLowerCase() || '';
+      const scientificName = plant.scientific_name?.toLowerCase() || '';
+      const family = plant.family?.toLowerCase() || '';
+      
+      return (
+        commonName.includes(query) ||
+        scientificName.includes(query) ||
+        family.includes(query)
+      );
+    });
+  }, [plants, searchQuery]);
+
+  // loadPlants avec useCallback (hook, donc avant les returns)
+  const loadPlants = useCallback(async () => {
+    try {
+      setLoadingPlants(true);
+      const response = await fetch(`/api/admin/plants?page=${page}&perPage=50`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors du chargement');
+      }
+
+      setPlants(data.items as unknown as Plant[]);
+      setTotalPages(data.totalPages || 1);
+    } catch (error) {
+      console.error('Erreur:', error);
+    } finally {
+      setLoadingPlants(false);
+    }
+  }, [page]);
 
   useEffect(() => {
     // Attendre que le loading soit terminé
@@ -42,26 +85,11 @@ export default function AdminPlantsPage() {
     
     // C'est un admin, charger les plantes
     loadPlants();
-  }, [loading, user, page]);
+  }, [loading, user, loadPlants]);
 
-  const loadPlants = async () => {
-    try {
-      setLoadingPlants(true);
-      const response = await fetch(`/api/admin/plants?page=${page}&perPage=50`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors du chargement');
-      }
-
-      setPlants(data.items as unknown as Plant[]);
-      setTotalPages(data.totalPages || 1);
-    } catch (error) {
-      console.error('Erreur:', error);
-    } finally {
-      setLoadingPlants(false);
-    }
-  };
+  // ============================================
+  // 2. FONCTIONS (non-hooks)
+  // ============================================
 
   const handleEdit = (plant: Plant) => {
     setEditingPlant(plant);
@@ -198,7 +226,9 @@ export default function AdminPlantsPage() {
     }
   };
 
-  // Pendant le chargement ne pas rediriger
+  // ============================================
+  // 3. SEULEMENT APRÈS TOUS LES HOOKS : les returns conditionnels
+  // ============================================
   if (loading) {
     return <LoadingSpinner message="Chargement..." />;
   }
@@ -216,26 +246,9 @@ export default function AdminPlantsPage() {
 
   const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
-  // Filtrer les plantes selon la recherche
-  const filteredPlants = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return plants;
-    }
-    
-    const query = searchQuery.toLowerCase();
-    return plants.filter((plant) => {
-      const commonName = plant.common_name?.toLowerCase() || '';
-      const scientificName = plant.scientific_name?.toLowerCase() || '';
-      const family = plant.family?.toLowerCase() || '';
-      
-      return (
-        commonName.includes(query) ||
-        scientificName.includes(query) ||
-        family.includes(query)
-      );
-    });
-  }, [plants, searchQuery]);
-
+  // ============================================
+  // 4. Le JSX principal
+  // ============================================
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}>
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
