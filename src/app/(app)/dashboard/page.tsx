@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
@@ -11,7 +11,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BotanicAssistant } from '@/components/BotanicAssistant';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { pb, user: contextUser, loading: contextLoading, refresh } = usePocketBase();
   const [user, setUser] = useState<any>(null);
   const [userPlants, setUserPlants] = useState<(UserPlant & { expand?: { plant?: Plant } })[]>([]);
@@ -640,5 +640,13 @@ export default function DashboardPage() {
       <BotanicAssistant />
       </div>
     </>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner message="Chargement..." />}>
+      <DashboardContent />
+    </Suspense>
   );
 }
