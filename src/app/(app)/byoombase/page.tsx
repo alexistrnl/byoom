@@ -4,9 +4,9 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PremiumGate } from '@/components/PremiumGate';
 import { isPremium } from '@/lib/subscription';
 import { SearchIcon, PlantIcon, BookIcon, SunIcon, WaterIcon, CompatibilityIcon } from '@/components/Icons';
 import type { Plant } from '@/lib/types/pocketbase';
@@ -25,6 +25,7 @@ const categoryConfig: Record<FilterTag, { label: string; icon: React.ComponentTy
 
 export default function ByoomBasePage() {
   const { pb, user } = usePocketBase();
+  const router = useRouter();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -120,19 +121,83 @@ export default function ByoomBasePage() {
     return <LoadingSpinner message="Chargement de la ByoomBase..." />;
   }
 
-  if (!userIsPremium) {
-    return (
-      <PremiumGate 
-        feature="Byoombase"
-        description="Accède au catalogue complet de toutes les plantes avec fiches détaillées, fun facts et guides d'entretien experts."
-      >
-        <div style={{ height: '400px' }} />
-      </PremiumGate>
-    );
-  }
-
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif', position: 'relative' }}>
+      {/* Overlay grisé pour non-premium */}
+      {!userIsPremium && (
+        <div
+          onClick={() => router.push('/pricing')}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '24px',
+              padding: '2rem',
+              textAlign: 'center',
+              maxWidth: '400px',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</p>
+            <h2 style={{
+              fontFamily: 'Georgia, serif',
+              fontWeight: 700,
+              fontSize: '1.5rem',
+              color: '#52414C',
+              marginBottom: '0.75rem',
+            }}>
+              Byoombase
+            </h2>
+            <p style={{
+              color: '#596157',
+              fontSize: '0.95rem',
+              marginBottom: '1.5rem',
+              lineHeight: '1.5',
+            }}>
+              Accède au catalogue complet de toutes les plantes avec fiches détaillées, fun facts et guides d'entretien experts.
+            </p>
+            <button
+              onClick={() => router.push('/pricing')}
+              style={{
+                backgroundColor: '#FEF3C7',
+                border: 'none',
+                borderRadius: '50%',
+                width: '48px',
+                height: '48px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                margin: '0 auto',
+                boxShadow: '0 4px 12px rgba(254, 243, 199, 0.4)',
+              }}
+            >
+              <span style={{ fontSize: '1.5rem' }}>⭐</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Contenu grisé si non-premium */}
+      <div style={{
+        filter: !userIsPremium ? 'grayscale(100%) brightness(0.7)' : 'none',
+        pointerEvents: !userIsPremium ? 'none' : 'auto',
+        opacity: !userIsPremium ? 0.5 : 1,
+      }}>
       <div className="mx-auto max-w-7xl px-3 py-4 md:px-8 md:py-8">
         {/* Header avec fond distinct */}
         <div className="mb-4 rounded-2xl p-4 md:mb-8 md:rounded-3xl md:p-8" style={{ backgroundColor: '#52414C' }}>
@@ -476,6 +541,7 @@ export default function ByoomBasePage() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

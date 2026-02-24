@@ -25,6 +25,7 @@ export default function DiagnosePage() {
   const [processingImage, setProcessingImage] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+  const [plantSelectionError, setPlantSelectionError] = useState(false);
   const [checkedActions, setCheckedActions] = useState<Set<number>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [observations, setObservations] = useState<string>('');
@@ -203,10 +204,21 @@ export default function DiagnosePage() {
   };
 
   const handleDiagnose = async () => {
-    if (!image || !selectedPlantId) {
-      setError('Veuillez sélectionner une plante et une image');
+    if (!selectedPlantId) {
+      setPlantSelectionError(true);
+      setError('');
+      // Réinitialiser l'erreur après 5 secondes
+      setTimeout(() => setPlantSelectionError(false), 5000);
       return;
     }
+    
+    if (!image) {
+      setError('Veuillez sélectionner une image');
+      setPlantSelectionError(false);
+      return;
+    }
+    
+    setPlantSelectionError(false);
 
     // Vérifier la limite freemium
     if (!userIsPremium) {
@@ -364,16 +376,49 @@ export default function DiagnosePage() {
 
             {/* Sélecteur de plante si pas de plantId */}
             {!plantIdParam && (
-              <div className="mb-6">
+              <div className="mb-6 relative">
                 <label className="mb-2 block text-sm font-semibold" style={{ color: '#52414C' }}>
                   Choisir une plante
                 </label>
+                {/* Bulle d'erreur au-dessus du sélecteur */}
+                {plantSelectionError && (
+                  <div
+                    className="mb-3 rounded-2xl px-4 py-3 text-sm shadow-lg"
+                    style={{
+                      backgroundColor: '#E3655B',
+                      color: 'white',
+                      position: 'relative',
+                      animation: 'fadeIn 0.3s ease-out',
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                      <span className="font-semibold">Veuillez sélectionner une plante avant d'analyser</span>
+                    </div>
+                    {/* Pointe de la bulle */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '-8px',
+                        left: '24px',
+                        width: 0,
+                        height: 0,
+                        borderLeft: '8px solid transparent',
+                        borderRight: '8px solid transparent',
+                        borderTop: '8px solid #E3655B',
+                      }}
+                    />
+                  </div>
+                )}
                 <select
                   value={selectedPlantId}
-                  onChange={(e) => setSelectedPlantId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedPlantId(e.target.value);
+                    setPlantSelectionError(false);
+                  }}
                   className="w-full rounded-xl border-2 px-4 py-3 text-sm transition-colors focus:outline-none"
                   style={{
-                    borderColor: '#5B8C5A',
+                    borderColor: plantSelectionError ? '#E3655B' : '#5B8C5A',
                     color: '#52414C',
                   }}
                 >

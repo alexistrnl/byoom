@@ -30,7 +30,7 @@ export default function RegisterPage() {
         email,
         password,
         passwordConfirm,
-        username,
+        name: username, // Enregistrer le username dans le champ name
         points_total: 0,
         level: 1,
         badges: [],

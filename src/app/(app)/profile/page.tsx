@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { calculateLevel } from '@/lib/gamification';
+import { isPremium } from '@/lib/subscription';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export default function ProfilePage() {
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [username, setUsername] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const router = useRouter();
 
   const loadData = useCallback(async () => {
@@ -237,6 +239,107 @@ export default function ProfilePage() {
           )}
         </div>
 
+        {/* PLAN ACTUEL */}
+        <div
+          className="mb-6 rounded-2xl bg-white p-5 shadow-lg md:mb-8 md:rounded-3xl md:p-6"
+          style={{ 
+            border: '1px solid rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          <h3 className="mb-4 font-serif font-bold text-xl md:text-2xl" style={{ color: '#52414C' }}>
+            Plan d'abonnement
+          </h3>
+          <div className="flex items-center gap-4">
+            {isPremium(user) ? (
+              <>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  backgroundColor: '#FEF3C7',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(254, 243, 199, 0.4)'
+                }}>
+                  <span style={{ 
+                    fontSize: '1.5rem', 
+                    fontWeight: 700,
+                    color: '#52414C'
+                  }}>P</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-xl font-bold md:text-2xl" style={{ color: '#52414C', marginBottom: '0.25rem' }}>
+                    Premium
+                  </div>
+                  {user.subscription_status === 'active' && user.subscription_end_date && (
+                    <div className="text-sm md:text-base" style={{ color: '#596157', opacity: 0.8, marginBottom: '0.75rem' }}>
+                      Actif jusqu'au {new Date(user.subscription_end_date).toLocaleDateString('fr-FR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  )}
+                  {user.subscription_status !== 'active' && (
+                    <div className="text-sm md:text-base" style={{ color: '#596157', opacity: 0.8, marginBottom: '0.75rem' }}>
+                      Statut: {user.subscription_status || 'actif'}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="rounded-xl border-2 px-4 py-2 text-sm font-semibold transition-all hover:opacity-80 active:scale-95 md:text-base"
+                    style={{
+                      borderColor: '#E3655B',
+                      color: '#E3655B',
+                      backgroundColor: 'transparent'
+                    }}
+                  >
+                    Résilier
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  backgroundColor: '#F5F0E8',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <span style={{ 
+                    fontSize: '1.5rem', 
+                    fontWeight: 700,
+                    color: '#52414C'
+                  }}>G</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-xl font-bold md:text-2xl" style={{ color: '#52414C', marginBottom: '0.5rem' }}>
+                    Gratuit
+                  </div>
+                  <Link 
+                    href="/pricing"
+                    className="inline-block rounded-xl px-4 py-2 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 md:text-base"
+                    style={{ 
+                      backgroundColor: '#5B8C5A',
+                      boxShadow: '0 4px 12px rgba(91, 140, 90, 0.3)'
+                    }}
+                  >
+                    Passer Premium →
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* INFORMATIONS DU COMPTE */}
         <div
           className="mb-6 rounded-2xl bg-white p-5 shadow-lg md:mb-8 md:rounded-3xl md:p-6"
@@ -366,6 +469,64 @@ export default function ProfilePage() {
           Se déconnecter
         </button>
       </div>
+
+      {/* MODAL RÉSILIATION */}
+      {showCancelModal && (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)'
+          }}
+          onClick={() => setShowCancelModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl"
+            style={{
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-serif text-2xl font-bold" style={{ color: '#52414C' }}>
+                Résilier l'abonnement
+              </h3>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-gray-100"
+                style={{ color: '#596157' }}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="mb-6">
+              <p className="mb-4 text-base leading-relaxed" style={{ color: '#596157' }}>
+                Pour résilier votre abonnement Premium, veuillez nous envoyer un email à l'adresse suivante :
+              </p>
+              <div className="rounded-xl bg-gray-50 p-4 text-center">
+                <a
+                  href="mailto:contact@byoom.fr"
+                  className="text-lg font-semibold transition-colors hover:opacity-80"
+                  style={{ color: '#5B8C5A' }}
+                >
+                  contact@byoom.fr
+                </a>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="w-full rounded-xl bg-white px-6 py-3 text-base font-semibold transition-all active:scale-95"
+              style={{
+                backgroundColor: '#5B8C5A',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(91, 140, 90, 0.3)'
+              }}
+            >
+              Compris
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

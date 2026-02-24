@@ -54,13 +54,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {user && !isPremium(user) && pathname !== '/pricing' && !pathname.startsWith('/admin') && (
         <Link
           href="/pricing"
-          className="fixed top-4 right-4 z-50 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95"
+          className="fixed top-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full transition-all hover:scale-105 active:scale-95"
           style={{
-            backgroundColor: '#5B8C5A',
-            boxShadow: '0 4px 12px rgba(91, 140, 90, 0.3)',
+            backgroundColor: '#FEF3C7',
+            boxShadow: '0 4px 12px rgba(254, 243, 199, 0.4)',
           }}
         >
-          ⭐ Premium
+          <span style={{ fontSize: '1.2rem' }}>⭐</span>
         </Link>
       )}
 
