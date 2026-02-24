@@ -238,7 +238,7 @@ function DashboardContent() {
               <h1
                 className="mb-2 font-serif font-bold text-3xl text-white md:text-4xl"
               >
-                Bonjour <strong>{getUserName()}</strong> 👋
+                Bonjour {getUserName()} 👋
               </h1>
               <p className="text-sm text-white opacity-95 md:text-base">
                 {getGreeting()}

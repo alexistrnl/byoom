@@ -202,7 +202,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1">
               <h2 className="mb-1 font-serif font-bold text-2xl text-white md:text-3xl">
-                <strong>{user.display_name || user.name || 'Jardinier'}</strong>
+                {user.display_name || user.name || 'Jardinier'}
               </h2>
               <p className="text-sm text-white opacity-90 md:text-base">
                 {user.email || user.name}
@@ -309,7 +309,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               ) : (
-                <div className="text-base md:text-lg font-semibold" style={{ color: '#52414C' }}>
+                <div className="text-base md:text-lg" style={{ color: '#52414C' }}>
                   {user.name || 'Non défini'}
                 </div>
               )}
