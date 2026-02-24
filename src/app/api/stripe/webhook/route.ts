@@ -43,9 +43,30 @@ export async function POST(request: NextRequest) {
           const subscription = await stripe.subscriptions.retrieve(
             subscriptionId
           ) as any;
-          const endDate = new Date(
-            (subscription.current_period_end as number) * 1000
-          );
+          
+          console.log('Subscription data:', JSON.stringify({
+            id: subscription.id,
+            current_period_end: subscription.current_period_end,
+            status: subscription.status,
+          }));
+          
+          // Calcul sécurisé de la date de fin
+          let endDate: Date;
+          if (subscription.current_period_end) {
+            endDate = new Date(subscription.current_period_end * 1000);
+          } else {
+            // Fallback : +1 mois par défaut
+            endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + 1);
+          }
+          
+          // Vérifier que la date est valide
+          if (isNaN(endDate.getTime())) {
+            endDate = new Date();
+            endDate.setMonth(endDate.getMonth() + 1);
+          }
+          
+          console.log('End date calculée:', endDate.toISOString());
           
           await adminPb.collection('users').update(userId, {
             subscription_plan: 'premium',
@@ -54,7 +75,7 @@ export async function POST(request: NextRequest) {
             stripe_subscription_id: subscriptionId,
           }, { requestKey: null });
           
-          console.log('User mis à jour avec succès:', userId);
+          console.log('✅ User mis à jour avec succès:', userId);
         } catch (e) {
           console.error('Erreur mise à jour user:', e);
         }
