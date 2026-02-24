@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { isPremium } from '@/lib/subscription';
 import type { UserPlant, Plant } from '@/lib/types/pocketbase';
 import { processImageForUpload, isImageFile, isFileTooLarge } from '@/lib/imageUtils';
 
@@ -13,6 +14,7 @@ export default function DiagnosePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plantIdParam = searchParams.get('plantId');
+  const userIsPremium = isPremium(contextUser);
 
   const [userPlant, setUserPlant] = useState<(UserPlant & { expand?: { plant?: Plant } }) | null>(null);
   const [userPlants, setUserPlants] = useState<(UserPlant & { expand?: { plant?: Plant } })[]>([]);
@@ -204,6 +206,22 @@ export default function DiagnosePage() {
     if (!image || !selectedPlantId) {
       setError('Veuillez sélectionner une plante et une image');
       return;
+    }
+
+    // Vérifier la limite freemium
+    if (!userIsPremium) {
+      try {
+        const res = await fetch(
+          `/api/check-limits?type=diagnosis&userPlantId=${selectedPlantId}`
+        );
+        const { allowed } = await res.json();
+        if (!allowed) {
+          setError('Limite atteinte : 1 diagnostic/mois par plante en version gratuite. Passe Premium pour diagnostiquer sans limite !');
+          return;
+        }
+      } catch (err) {
+        console.error('Erreur lors de la vérification des limites:', err);
+      }
     }
 
     setLoading(true);
@@ -571,7 +589,18 @@ export default function DiagnosePage() {
             </div>
 
             {error && (
-              <div className="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-800">{error}</div>
+              <div className="mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-800">
+                <p className="mb-2">{error}</p>
+                {error.includes('Limite atteinte') && (
+                  <Link
+                    href="/pricing"
+                    className="mt-2 inline-block rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:scale-105"
+                    style={{ backgroundColor: '#5B8C5A' }}
+                  >
+                    Passer Premium 🌿
+                  </Link>
+                )}
+              </div>
             )}
           </div>
         ) : (

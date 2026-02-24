@@ -2,21 +2,48 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPocketBaseClient } from '@/lib/pocketbase';
+import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
+import { isPremium, FREEMIUM_LIMITS } from '@/lib/subscription';
 import { processImageForUpload, isImageFile, isFileTooLarge } from '@/lib/imageUtils';
 
 export default function IdentifyPage() {
+  const { user, pb } = usePocketBase();
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [userPlantCount, setUserPlantCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  const userIsPremium = isPremium(user);
+
+  useEffect(() => {
+    if (user && pb) {
+      loadUserPlantCount();
+    }
+  }, [user, pb]);
+
+  const loadUserPlantCount = async () => {
+    try {
+      const authData = pb.authStore.model;
+      if (!authData) return;
+
+      const plants = await pb.collection('user_plants').getList(1, 10, {
+        filter: `user = "${authData.id}"`,
+        requestKey: null,
+      });
+      setUserPlantCount(plants.totalItems);
+    } catch (error) {
+      console.error('Erreur lors du chargement du nombre de plantes:', error);
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,11 +134,16 @@ export default function IdentifyPage() {
   const handleIdentify = async () => {
     if (!image) return;
 
+    // Vérifier la limite freemium
+    if (!userIsPremium && userPlantCount >= FREEMIUM_LIMITS.maxPlants) {
+      setError('Limite atteinte : 2 identifications max en version gratuite. Passe Premium pour identifier sans limite !');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      const pb = getPocketBaseClient();
       const authData = pb.authStore.model;
 
       if (!authData) {
@@ -135,6 +167,8 @@ export default function IdentifyPage() {
       }
 
       setResult(data);
+      // Mettre à jour le nombre de plantes après identification réussie
+      await loadUserPlantCount();
     } catch (err: any) {
       setError(err.message || 'Erreur lors de l\'identification');
     } finally {
@@ -304,7 +338,16 @@ export default function IdentifyPage() {
                       border: '1px solid rgba(227, 101, 91, 0.2)',
                     }}
                   >
-                    {error}
+                    <p className="mb-2">{error}</p>
+                    {error.includes('Limite atteinte') && (
+                      <Link
+                        href="/pricing"
+                        className="mt-2 inline-block rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:scale-105"
+                        style={{ backgroundColor: '#5B8C5A' }}
+                      >
+                        Passer Premium 🌿
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>

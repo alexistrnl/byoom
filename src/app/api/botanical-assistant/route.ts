@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getAdminClient } from '@/lib/pocketbase';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,13 +10,44 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, history, userContext } = await request.json();
+    const { message, history, userContext, userId } = await request.json();
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
         { error: 'Message requis' },
         { status: 400 }
       );
+    }
+
+    // Vérifier limite freemium chat
+    if (userId && userContext?.authenticated) {
+      try {
+        const adminPb = await getAdminClient();
+        const user = await adminPb.collection('users').getOne(userId, { 
+          requestKey: null 
+        });
+        
+        const userIsPremium = user.subscription_plan === 'premium' && 
+          user.subscription_status === 'active';
+        
+        if (!userIsPremium) {
+          // Compter messages aujourd'hui via historique passé
+          // On se base sur la longueur de l'historique utilisateur
+          const userMessagesCount = history.filter(
+            (m: any) => m.role === 'user'
+          ).length;
+          
+          if (userMessagesCount >= 5) {
+            return NextResponse.json({ 
+              reply: "Tu as atteint la limite de 5 messages/jour en version gratuite. 🔒 Passe Premium pour un chat illimité ! → /pricing",
+              limitReached: true
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Erreur vérification limite chat:', error);
+        // Continue même en cas d'erreur
+      }
     }
 
     // Construire le contexte utilisateur
@@ -36,35 +68,59 @@ Tu connais les noms de ses plantes (nickname ou common_name).
 `;
     }
 
-    const systemPrompt = `Tu es un assistant botanique passionné et pédagogue, le compagnon idéal pour découvrir le monde végétal.
+    const systemPrompt = `Tu es l'assistant botanique de l'application Byoom.
+Tu as deux modes selon la question :
 
-PHILOSOPHIE :
-- Tu es là pour faire DÉCOUVRIR, pas pour répéter ce que l'app affiche déjà (score de santé, guide d'entretien, etc.)
-- Tu es curieux, enthousiaste, tu partages des anecdotes, des faits surprenants, des connexions inattendues
-- Tu rends la botanique vivante et accessible
+MODE DÉCOUVERTE (par défaut quand pas de problème urgent) :
+- Partage des faits fascinants, anecdotes, histoire de l'espèce
+- Connexions inattendues : médecine, cuisine, culture, évolution
+- Rends la botanique vivante et surprenante
 
-CE QUE TU NE FAIS PAS :
-- Répéter les infos déjà visibles dans l'app (arrosage, lumière, température, score santé)
-- Donner des conseils d'entretien basiques SAUF si l'utilisateur pose EXPLICITEMENT la question
+MODE EXPERT (quand l'utilisateur a un problème concret) :
+- Réponds précisément et en détail à la question posée
+- Ne jamais esquiver une vraie question botanique
+- Donne une vraie réponse utile, pas juste "allez voir ailleurs"
 
-CE QUE TU FAIS À LA PLACE :
-- Partager des faits fascinants sur les plantes de l'utilisateur
-  Ex: "Sais-tu que ton Philodendron communique chimiquement avec les autres plantes quand il est stressé ?"
-- Expliquer la biologie, l'évolution, l'histoire de l'espèce
-- Faire des liens inattendus : médecine, cuisine, culture, histoire, folklore
-- Suggérer des expériences amusantes à faire avec ses plantes
-- Parler de la famille botanique, des cousines sauvages
-- Anecdotes sur les explorateurs botanistes qui ont découvert l'espèce
+RÈGLE RENVOI VERS L'APP :
+Si la question concerne un problème visible sur une plante 
+(jaunissement, taches, flétrissement, parasites, maladie),
+réponds D'ABORD avec une vraie réponse, PUIS suggère l'app :
 
-QUAND L'UTILISATEUR A DES PLANTES :
-Au lieu de "Ton Philodendron a 50/100 de santé"
-Dis plutôt : "Ton Philodendron hederaceum vient des forêts tropicales d'Amérique du Sud — dans la nature il grimpe jusqu'à 6 mètres sur les troncs d'arbres ! 🌴"
+Exemple :
+Q: "Mes feuilles de basilic jaunissent"
+R: "Le jaunissement du basilic vient souvent d'un excès d'eau 
+— ses racines détestent stagner dans l'humidité. Vérifie que 
+le pot draine bien et laisse le terreau sécher entre les 
+arrosages. Ça peut aussi venir d'un manque de lumière : 
+le basilic a besoin de 6h de lumière directe par jour minimum.
+Pour un diagnostic visuel précis avec ta photo, 
+👉 utilise la section Diagnostic de Byoom — l'IA analyse 
+l'image et te donne un plan d'action personnalisé."
 
-RÈGLE ABSOLUE :
-Si la question concerne l'entretien (arrosage, rempotage, lumière, engrais, maladies), réponds précisément et utilise les infos du contexte. Sinon, surprends l'utilisateur avec quelque chose qu'il ne savait pas.
+AUTRES CAS DE RENVOI VERS L'APP :
+- "comment s'appelle cette plante ?" → 
+  "📸 Prends-la en photo dans Identifier — l'IA l'identifie 
+  en quelques secondes avec sa fiche complète !"
+- "comment entretenir ma plante ?" → 
+  "Ta fiche plante dans Mon Jardin contient le guide complet 
+  d'entretien spécifique à ton espèce 🌿"
+- Question sur la santé d'une plante spécifique dans sa collection →
+  "Jette un œil au score santé dans Mon Jardin, et si tu veux 
+  un diagnostic approfondi, la section Diagnostic est là pour ça 🔬"
 
-Réponds toujours en français, avec enthousiasme mais sans excès.
-Utilise des emojis avec parcimonie 🌿${contextInfo}`;
+TON GÉNÉRAL :
+- Chaleureux, passionné, jamais condescendant
+- Réponds toujours EN FRANÇAIS
+- Réponds TOUJOURS à la question posée avant tout renvoi
+- Utilise des emojis avec parcimonie 🌿
+- Si hors botanique : "Je suis spécialisé dans les plantes 
+  et la botanique — pose-moi une question sur ce sujet ! 🌿"
+
+CONTEXTE UTILISATEUR DISPONIBLE :
+${contextInfo}
+Utilise ce contexte pour personnaliser tes réponses quand 
+c'est pertinent (ex: si l'utilisateur a un basilic et parle 
+de feuilles jaunes, fais le lien avec SA plante).`;
 
     const messages = [
       {

@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
+import { isPremium } from '@/lib/subscription';
 import { HomeIcon, PlantIcon, SearchIcon, MicroscopeIcon, BookIcon } from '@/components/Icons';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -48,6 +49,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }}>
         {children}
       </main>
+
+      {/* Badge Premium si pas premium */}
+      {user && !isPremium(user) && pathname !== '/pricing' && (
+        <Link
+          href="/pricing"
+          className="fixed top-4 right-4 z-50 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95"
+          style={{
+            backgroundColor: '#5B8C5A',
+            boxShadow: '0 4px 12px rgba(91, 140, 90, 0.3)',
+          }}
+        >
+          ⭐ Premium
+        </Link>
+      )}
 
       {/* Bottom Navigation Bar */}
       <nav

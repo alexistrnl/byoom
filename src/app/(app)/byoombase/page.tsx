@@ -6,6 +6,8 @@ import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { PremiumGate } from '@/components/PremiumGate';
+import { isPremium } from '@/lib/subscription';
 import { SearchIcon, StarIcon, PlantIcon, BookIcon, SunIcon, WaterIcon, CompatibilityIcon } from '@/components/Icons';
 import type { Plant } from '@/lib/types/pocketbase';
 
@@ -22,7 +24,7 @@ const categoryConfig: Record<FilterTag, { label: string; icon: React.ComponentTy
 };
 
 export default function ByoomBasePage() {
-  const { pb } = usePocketBase();
+  const { pb, user } = usePocketBase();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,6 +33,8 @@ export default function ByoomBasePage() {
   const [difficultyFilter, setDifficultyFilter] = useState<number | null>(null);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [showFiltersModal, setShowFiltersModal] = useState(false);
+
+  const userIsPremium = isPremium(user);
 
   useEffect(() => {
     loadPlants();
@@ -122,6 +126,17 @@ export default function ByoomBasePage() {
 
   if (loading) {
     return <LoadingSpinner message="Chargement de la ByoomBase..." />;
+  }
+
+  if (!userIsPremium) {
+    return (
+      <PremiumGate 
+        feature="Byoombase"
+        description="Accède au catalogue complet de toutes les plantes avec fiches détaillées, fun facts et guides d'entretien experts."
+      >
+        <div style={{ height: '400px' }} />
+      </PremiumGate>
+    );
   }
 
   return (

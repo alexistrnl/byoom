@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 import { calculateLevel } from '@/lib/gamification';
@@ -16,7 +16,9 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [userPlants, setUserPlants] = useState<(UserPlant & { expand?: { plant?: Plant } })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const loadData = useCallback(async () => {
     if (!contextUser) {
@@ -74,6 +76,21 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextLoading, contextUser]);
 
+  // Détecter le paramètre success après paiement
+  useEffect(() => {
+    const paymentSuccess = searchParams.get('success');
+    if (paymentSuccess === 'true' && contextUser && !loading) {
+      // Recharger les données user depuis PocketBase pour avoir le nouveau statut premium
+      refresh();
+      loadData();
+      // Afficher le modal de félicitations
+      setShowSuccessModal(true);
+      // Nettoyer l'URL
+      router.replace('/dashboard', { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, contextUser, loading]);
+
   useEffect(() => {
     if (!contextUser || loading) return;
     
@@ -112,13 +129,13 @@ export default function DashboardPage() {
     }
   };
 
-  // Prénom ou email
-  const getFirstName = () => {
-    if (user?.display_name) {
-      return user.display_name.split(' ')[0];
+  // Nom d'utilisateur
+  const getUserName = () => {
+    if (user?.name) {
+      return user.name;
     }
-    if (user?.username) {
-      return user.username.split('@')[0];
+    if (user?.display_name) {
+      return user.display_name;
     }
     return 'Jardinier';
   };
@@ -132,25 +149,129 @@ export default function DashboardPage() {
   const progress = nextLevelPoints > 0 ? (pointsTotal / nextLevelPoints) * 100 : 0;
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
-    >
+    <>
+      {/* Modal de félicitations Premium */}
+      {showSuccessModal && (
+        <div
+          className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            animation: 'fadeIn 0.3s ease-out',
+          }}
+          onClick={() => setShowSuccessModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-3xl bg-white p-8 text-center"
+            style={{
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              animation: 'fadeInUp 0.4s ease-out',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-xl text-gray-400 transition-colors hover:bg-gray-100"
+              aria-label="Fermer"
+            >
+              ✕
+            </button>
+
+            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
+            
+            <h2
+              className="mb-3 font-serif text-2xl font-bold"
+              style={{ color: '#52414C' }}
+            >
+              Bienvenue dans Byoom Premium !
+            </h2>
+            
+            <p className="mb-6 text-base" style={{ color: '#596157' }}>
+              Toutes les fonctionnalités sont maintenant débloquées
+            </p>
+
+            <div className="mb-6 space-y-2 text-left">
+              <div className="flex items-center gap-2 text-sm" style={{ color: '#596157' }}>
+                <span>✅</span>
+                <span>Identifications illimitées</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm" style={{ color: '#596157' }}>
+                <span>✅</span>
+                <span>Diagnostics illimités</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm" style={{ color: '#596157' }}>
+                <span>✅</span>
+                <span>Accès complet à la Byoombase</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm" style={{ color: '#596157' }}>
+                <span>✅</span>
+                <span>Chat botanique illimité</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full rounded-full px-6 py-3 text-base font-semibold text-white transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, #5B8C5A 0%, #6BA06A 100%)',
+                boxShadow: '0 4px 16px rgba(91, 140, 90, 0.3)',
+              }}
+            >
+              Découvrir maintenant 🌿
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div
+        className="min-h-screen"
+        style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
+      >
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
         {/* HEADER avec fond dégradé */}
         <div className="mb-6 rounded-3xl p-6 md:mb-8 md:p-8" style={{ 
           background: 'linear-gradient(135deg, #5B8C5A 0%, #6BA06A 100%)',
           boxShadow: '0 8px 24px rgba(91, 140, 90, 0.2)'
         }}>
-          <div className="mb-2">
-            <h1
-              className="mb-2 font-serif font-bold text-3xl text-white md:text-4xl"
+          <div className="flex items-start justify-between">
+            <div className="mb-2 flex-1">
+              <h1
+                className="mb-2 font-serif font-bold text-3xl text-white md:text-4xl"
+              >
+                Bonjour {getUserName()} 👋
+              </h1>
+              <p className="text-sm text-white opacity-95 md:text-base">
+                {getGreeting()}
+              </p>
+            </div>
+            <Link
+              href="/profile"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white bg-opacity-30 backdrop-blur-sm transition-all hover:bg-opacity-40 active:scale-95 md:h-14 md:w-14"
+              style={{
+                border: '2px solid rgba(255, 255, 255, 0.5)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+              aria-label="Voir mon profil"
             >
-              Bonjour, {getFirstName()} 👋
-            </h1>
-            <p className="text-sm text-white opacity-95 md:text-base">
-              {getGreeting()}
-            </p>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ color: '#52414C' }}
+                className="md:w-7 md:h-7"
+              >
+                <path
+                  d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M12.0002 14.5C6.99016 14.5 2.91016 17.86 2.91016 22C2.91016 22.28 3.13016 22.5 3.41016 22.5H20.5902C20.8702 22.5 21.0902 22.28 21.0902 22C21.0902 17.86 17.0102 14.5 12.0002 14.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </Link>
           </div>
         </div>
 
@@ -517,6 +638,7 @@ export default function DashboardPage() {
         </div>
       </div>
       <BotanicAssistant />
-    </div>
+      </div>
+    </>
   );
 }

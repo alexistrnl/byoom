@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -25,12 +27,15 @@ interface UserContext {
 }
 
 export function BotanicAssistant() {
+  const { pb } = usePocketBase();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [userContext, setUserContext] = useState<UserContext | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -150,6 +155,7 @@ export function BotanicAssistant() {
             content: m.content,
           })),
           userContext,
+          userId: pb.authStore.model?.id,
         }),
       });
 
@@ -157,6 +163,10 @@ export function BotanicAssistant() {
 
       if (!response.ok) {
         throw new Error(data.error || 'Erreur lors de la requête');
+      }
+
+      if (data.limitReached) {
+        setLimitReached(true);
       }
 
       setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
@@ -370,6 +380,15 @@ export function BotanicAssistant() {
                     }}
                   >
                     {message.content}
+                    {limitReached && message.role === 'assistant' && message.content.includes('limite') && (
+                      <button
+                        onClick={() => router.push('/pricing')}
+                        className="mt-3 block w-full rounded-lg px-4 py-2 text-xs font-semibold text-white transition-all hover:scale-105"
+                        style={{ backgroundColor: '#5B8C5A' }}
+                      >
+                        Passer Premium 🌿
+                      </button>
+                    )}
                   </div>
                   {message.role === 'user' && (
                     <div className="h-8 w-8 shrink-0" />
@@ -440,7 +459,7 @@ export function BotanicAssistant() {
               onKeyPress={handleKeyPress}
               onFocus={handleFocus}
               placeholder="Demande-moi n'importe quoi sur les plantes..."
-              disabled={isLoading}
+              disabled={isLoading || limitReached}
               className="flex-1 rounded-full px-4 py-3 outline-none disabled:opacity-50"
               style={{
                 backgroundColor: '#F5F0E8',
