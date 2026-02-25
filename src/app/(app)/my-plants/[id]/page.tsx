@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePocketBase } from '@/lib/contexts/PocketBaseContext';
@@ -214,6 +214,228 @@ export default function PlantDetailPage() {
       return text.replace(/(\d+)\s*(semaine|semaines|sem)/i, `${weeks} semaine${weeks !== '1' ? 's' : ''}`);
     }
     return formatText(watering);
+  };
+
+  // Fonction pour formater le texte d'entretien avec gras et puces
+  const formatCareText = (text: string): React.ReactNode => {
+    if (!text) return '';
+    
+    // D'abord, diviser par les retours à la ligne existants
+    const lines = text.split('\n').filter(line => line.trim());
+    const formattedLines: React.ReactNode[] = [];
+    let lineIndex = 0;
+    
+    lines.forEach((line) => {
+      const trimmedLine = line.trim();
+      
+      // Détecter si c'est une liste (commence par chiffre, tiret, ou point)
+      if (/^[\d\-•·]\s/.test(trimmedLine) || trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
+        // C'est une puce
+        const content = trimmedLine.replace(/^[\d\-•·]\s*/, '');
+        // Capitaliser la première lettre
+        const capitalizedContent = content.charAt(0).toUpperCase() + content.slice(1);
+        formattedLines.push(
+          <div key={lineIndex++} className="flex items-start gap-2 mb-1.5">
+            <span className="text-xs mt-0.5" style={{ color: '#5B8C5A' }}>•</span>
+            <span className="text-xs leading-relaxed flex-1" style={{ color: '#596157' }}>
+              {formatTextWithBold(capitalizedContent)}
+            </span>
+          </div>
+        );
+      } else {
+        // Diviser le texte en phrases en détectant les séparations par ponctuation
+        // On divise par : point, point-virgule, deux-points (avec ou sans espace après)
+        let sentences: string[] = [];
+        
+        // Première approche : diviser par les ponctuations en gardant la ponctuation
+        // Pattern : texte + ponctuation (point, point-virgule, deux-points) + espace optionnel
+        const parts = trimmedLine.split(/([.;:])\s*/);
+        
+        let currentSentence = '';
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i];
+          
+          if (!part) continue;
+          
+          // Si c'est une ponctuation (point, point-virgule, deux-points)
+          if (/^[.;:]$/.test(part)) {
+            currentSentence += part;
+            // Terminer la phrase ici
+            if (currentSentence.trim()) {
+              sentences.push(currentSentence.trim());
+              currentSentence = '';
+            }
+          } else {
+            // C'est du texte
+            const trimmedPart = part.trim();
+            if (trimmedPart) {
+              currentSentence += (currentSentence ? ' ' : '') + trimmedPart;
+            }
+          }
+        }
+        
+        // Ajouter la dernière phrase si elle existe (sans ponctuation finale)
+        if (currentSentence.trim()) {
+          sentences.push(currentSentence.trim());
+        }
+        
+        // Si aucune phrase trouvée avec ponctuation, essayer de diviser par certains patterns
+        if (sentences.length === 0 || (sentences.length === 1 && sentences[0] === trimmedLine)) {
+          // Détecter les cas où un point est suivi d'une minuscule (nouvelle phrase sans majuscule)
+          // Pattern : point + espace + minuscule = nouvelle phrase
+          const pointLowercasePattern = /\.\s+([a-zàâäéèêëïîôöùûüÿç])/g;
+          const pointMatches: number[] = [];
+          let match;
+          
+          while ((match = pointLowercasePattern.exec(trimmedLine)) !== null) {
+            // Position du début de la nouvelle phrase (après le point et l'espace)
+            pointMatches.push(match.index + 2);
+          }
+          
+          if (pointMatches.length > 0) {
+            // Diviser aux positions détectées
+            const newSentences: string[] = [];
+            let start = 0;
+            
+            pointMatches.forEach((pos) => {
+              if (pos > start) {
+                const sentence = trimmedLine.substring(start, pos - 2).trim(); // -2 pour exclure ". "
+                if (sentence) {
+                  newSentences.push(sentence + '.');
+                }
+                start = pos;
+              }
+            });
+            
+            // Ajouter la dernière partie
+            if (start < trimmedLine.length) {
+              const lastSentence = trimmedLine.substring(start).trim();
+              if (lastSentence) {
+                newSentences.push(lastSentence);
+              }
+            }
+            
+            if (newSentences.length > 0) {
+              sentences = newSentences;
+            }
+          }
+          
+          // Si toujours rien, essayer de diviser par certains mots-clés
+          if (sentences.length === 0 || (sentences.length === 1 && sentences[0] === trimmedLine)) {
+            const keywordPattern = /\s+(sur-arrosage|sous-arrosage|excès|manque|si|utilisez|évitez|testez|recommandé|toléré|minimum|maximum|idéal|ph|drainage|rempotage|signes|brumisation|humidificateur|lampe)\s*[:]?\s*/i;
+            const keywordSplit = trimmedLine.split(keywordPattern);
+            
+            if (keywordSplit.length > 1) {
+              sentences = keywordSplit.filter(s => s.trim());
+            } else {
+              // Dernier recours : diviser par virgules si présentes
+              const commaSplit = trimmedLine.split(/,\s+/);
+              if (commaSplit.length > 1) {
+                sentences = commaSplit;
+              } else {
+                sentences = [trimmedLine];
+              }
+            }
+          }
+        }
+        
+        // Afficher chaque phrase sur une nouvelle ligne avec majuscule
+        sentences.forEach((sentence) => {
+          const trimmed = sentence.trim();
+          if (!trimmed) return;
+          
+          // Capitaliser la première lettre de la phrase
+          const capitalizedSentence = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+          formattedLines.push(
+            <div key={lineIndex++} className="mb-1.5 text-xs leading-relaxed" style={{ color: '#596157' }}>
+              {formatTextWithBold(capitalizedSentence)}
+            </div>
+          );
+        });
+      }
+    });
+    
+    return <div>{formattedLines}</div>;
+  };
+
+  // Fonction pour mettre en gras les informations importantes
+  const formatTextWithBold = (text: string): React.ReactNode => {
+    if (!text) return '';
+    
+    // Patterns à mettre en gras :
+    // - Chiffres avec unités (ex: "3-5 jours", "2000-4000 lux", "15°C - 25°C", "60-80%")
+    // - Mots-clés importants (ex: "été", "hiver", "idéal", "minimum", "maximum")
+    // - Fréquences (ex: "tous les X jours", "X fois par semaine")
+    
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    
+    // Pattern pour détecter les informations importantes
+    const patterns = [
+      // Températures et plages numériques
+      /\d+°C\s*-\s*\d+°C/g,
+      /\d+\s*-\s*\d+\s*(jours?|semaines?|mois|fois|lux|%|cm|m)/gi,
+      // Fréquences
+      /tous les \d+/gi,
+      /\d+\s*(fois|fois par)/gi,
+      // Mots-clés importants
+      /\b(été|hiver|printemps|automne|idéal|minimum|maximum|recommandé|toléré|nécessaire|essentiel)\b/gi,
+      // Pourcentages et compositions
+      /\d+%/g,
+      // Distances et mesures
+      /\d+\s*(cm|m|mètres?)\b/gi,
+    ];
+    
+    // Trouver toutes les correspondances
+    const matches: Array<{ start: number; end: number; text: string }> = [];
+    patterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        matches.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          text: match[0]
+        });
+      }
+    });
+    
+    // Trier par position
+    matches.sort((a, b) => a.start - b.start);
+    
+    // Fusionner les chevauchements
+    const mergedMatches: Array<{ start: number; end: number; text: string }> = [];
+    matches.forEach(match => {
+      const last = mergedMatches[mergedMatches.length - 1];
+      if (last && match.start <= last.end) {
+        // Chevauchement : fusionner
+        last.end = Math.max(last.end, match.end);
+        last.text = text.substring(last.start, last.end);
+      } else {
+        mergedMatches.push({ ...match });
+      }
+    });
+    
+    // Construire le résultat
+    mergedMatches.forEach((match, idx) => {
+      // Ajouter le texte avant la correspondance
+      if (match.start > lastIndex) {
+        parts.push(text.substring(lastIndex, match.start));
+      }
+      // Ajouter le texte en gras
+      parts.push(
+        <strong key={idx} style={{ color: '#52414C', fontWeight: 600 }}>
+          {match.text}
+        </strong>
+      );
+      lastIndex = match.end;
+    });
+    
+    // Ajouter le reste du texte
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+    
+    return parts.length > 0 ? <>{parts}</> : text;
   };
 
   // URL de la photo
@@ -1146,11 +1368,11 @@ export default function PlantDetailPage() {
                       <div className="mb-1 flex items-center">
                         {item.icon && <item.icon size={20} color="#5B8C5A" />}
                       </div>
-                      <div className="mb-1 text-xs font-bold" style={{ color: '#52414C' }}>
+                      <div className="mb-2 text-xs font-bold" style={{ color: '#52414C' }}>
                         {item.label}
                       </div>
                       <div className="text-xs leading-relaxed" style={{ color: '#596157' }}>
-                        {item.text}
+                        {formatCareText(item.text)}
                       </div>
                     </div>
                   )

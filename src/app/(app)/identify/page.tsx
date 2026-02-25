@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getPocketBaseClient } from '@/lib/pocketbase';
@@ -23,6 +23,65 @@ export default function IdentifyPage() {
   const router = useRouter();
 
   const userIsPremium = isPremium(user);
+
+  // Fonction pour formater le texte des care_tips
+  const formatCareText = (text: string) => {
+    if (!text) return null;
+    
+    // Séparer par les points suivis d'un espace ou fin de phrase
+    const sentences = text.split(/\.\s+/);
+    
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {sentences.map((sentence, i) => {
+          if (!sentence.trim()) return null;
+          
+          const cleaned = sentence.trim();
+          
+          // Détecter si c'est une info principale (commence par majuscule après catégorie)
+          const isMainInfo = i === 0;
+          const isSousArrosage = cleaned.toLowerCase().includes('sous-arrosage');
+          const isSurArrosage = cleaned.toLowerCase().includes('sur-arrosage');
+          const isWarning = isSousArrosage || isSurArrosage || 
+            cleaned.toLowerCase().includes('attention') ||
+            cleaned.toLowerCase().includes('jamais');
+          
+          return (
+            <div key={i} style={{
+              display: 'flex',
+              gap: '0.4rem',
+              alignItems: 'flex-start',
+              padding: isWarning ? '0.4rem 0.6rem' : '0.1rem 0',
+              backgroundColor: isWarning ? 'rgba(227,101,91,0.08)' : 'transparent',
+              borderRadius: isWarning ? '8px' : '0',
+              borderLeft: isWarning ? '3px solid #E3655B' : 'none',
+            }}>
+              {isWarning && (
+                <span style={{ fontSize: '0.8rem', marginTop: '1px' }}>⚠️</span>
+              )}
+              <p style={{
+                margin: 0,
+                fontSize: '0.85rem',
+                lineHeight: '1.6',
+                color: isWarning ? '#E3655B' : '#52414C',
+                fontWeight: isMainInfo ? 500 : 400,
+              }}>
+                {/* Mettre en gras les chiffres et valeurs */}
+                {cleaned.replace(/(\d+[-–]\d+\s*(?:cm|m|°C|%|jours?|semaines?|mois|heures?|lux|ans?))/gi, '**$1**')
+                  .split('**')
+                  .map((part, j) => 
+                    j % 2 === 1 
+                      ? <strong key={j} style={{ color: '#5B8C5A' }}>{part}</strong>
+                      : part
+                  )
+                }.
+              </p>
+            </div>
+          );
+        }).filter(Boolean)}
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (user && pb) {
@@ -433,6 +492,81 @@ export default function IdentifyPage() {
                 </div>
               </div>
             </div>
+
+            {/* Guide d'entretien */}
+            {result.care_tips && (
+              <div
+                className="mb-6 rounded-2xl p-6"
+                style={{
+                  backgroundColor: 'white',
+                  border: '1px solid rgba(0, 0, 0, 0.06)',
+                }}
+              >
+                <h3
+                  className="mb-4 font-serif font-bold"
+                  style={{ fontSize: '1.25rem', color: '#52414C' }}
+                >
+                  Guide d'entretien
+                </h3>
+                <div className="space-y-6">
+                  {result.care_tips.watering && (
+                    <div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">💧</span>
+                        <h4 className="text-sm font-bold" style={{ color: '#52414C' }}>
+                          Arrosage
+                        </h4>
+                      </div>
+                      {formatCareText(result.care_tips.watering)}
+                    </div>
+                  )}
+                  {result.care_tips.light && (
+                    <div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">☀️</span>
+                        <h4 className="text-sm font-bold" style={{ color: '#52414C' }}>
+                          Lumière
+                        </h4>
+                      </div>
+                      {formatCareText(result.care_tips.light)}
+                    </div>
+                  )}
+                  {result.care_tips.soil && (
+                    <div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">🌱</span>
+                        <h4 className="text-sm font-bold" style={{ color: '#52414C' }}>
+                          Terreau
+                        </h4>
+                      </div>
+                      {formatCareText(result.care_tips.soil)}
+                    </div>
+                  )}
+                  {result.care_tips.temperature && (
+                    <div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">🌡️</span>
+                        <h4 className="text-sm font-bold" style={{ color: '#52414C' }}>
+                          Température
+                        </h4>
+                      </div>
+                      {formatCareText(result.care_tips.temperature)}
+                    </div>
+                  )}
+                  {result.care_tips.humidity && (
+                    <div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-lg">💨</span>
+                        <h4 className="text-sm font-bold" style={{ color: '#52414C' }}>
+                          Humidité
+                        </h4>
+                      </div>
+                      {formatCareText(result.care_tips.humidity)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* XP gagnés */}
             {result.xpAwarded > 0 && (

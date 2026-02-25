@@ -636,6 +636,73 @@ function DashboardContent() {
             </div>
           )}
         </div>
+
+        {/* FEATURES À VENIR */}
+        <div
+          className="mt-6 rounded-2xl bg-white p-6 shadow-lg md:mt-8 md:rounded-3xl md:p-8"
+          style={{ 
+            border: '1px solid rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          <div className="mb-6 text-center">
+            <h2
+              className="mb-2 font-serif font-bold text-2xl md:text-3xl"
+              style={{ color: '#52414C' }}
+            >
+              Fonctionnalités à venir
+            </h2>
+            <p className="text-sm md:text-base" style={{ color: '#596157' }}>
+              De nouvelles fonctionnalités arrivent bientôt
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#F5F0E8' }}>
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full md:h-14 md:w-14" style={{ backgroundColor: '#5B8C5A' }}>
+                  <span className="text-2xl md:text-3xl">✂️</span>
+                </div>
+              </div>
+              <div className="text-sm font-semibold md:text-base" style={{ color: '#52414C' }}>
+                Conseil de coupe (Bonsaï)
+              </div>
+            </div>
+
+            <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#F5F0E8' }}>
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full md:h-14 md:w-14" style={{ backgroundColor: '#5B8C5A' }}>
+                  <span className="text-2xl md:text-3xl">🤝</span>
+                </div>
+              </div>
+              <div className="text-sm font-semibold md:text-base" style={{ color: '#52414C' }}>
+                Compatibilité des plantes
+              </div>
+            </div>
+
+            <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#F5F0E8' }}>
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full md:h-14 md:w-14" style={{ backgroundColor: '#5B8C5A' }}>
+                  <span className="text-2xl md:text-3xl">👥</span>
+                </div>
+              </div>
+              <div className="text-sm font-semibold md:text-base" style={{ color: '#52414C' }}>
+                Réseau social
+              </div>
+            </div>
+
+            <div className="rounded-xl p-4 text-center" style={{ backgroundColor: '#F5F0E8' }}>
+              <div className="mb-3 flex justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full md:h-14 md:w-14" style={{ backgroundColor: '#5B8C5A' }}>
+                  <span className="text-2xl md:text-3xl">✨</span>
+                </div>
+              </div>
+              <div className="text-sm font-semibold md:text-base" style={{ color: '#52414C' }}>
+                Et bien plus
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <BotanicAssistant />
       </div>

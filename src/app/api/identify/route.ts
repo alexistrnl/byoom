@@ -189,6 +189,7 @@ export async function POST(request: NextRequest) {
         family: plant.family,
         confidence: identification.confidence,
       },
+      care_tips: identification.care_tips, // Ajouter les care_tips dans la réponse
       userPlant: {
         id: userPlant.id,
         nickname: userPlant.nickname,
