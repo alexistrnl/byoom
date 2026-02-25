@@ -20,26 +20,46 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      // Attendre un peu pour que le contexte se mette à jour
       await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // Utiliser window.location.href pour forcer un rechargement complet
-      // Cela garantit que le contexte PocketBase sera réinitialisé avec la nouvelle auth
       window.location.href = '/dashboard';
     } catch (err: any) {
-      setError(err.message || 'Erreur de connexion');
+      // Gestion spécifique des erreurs d'authentification PocketBase
+      let errorMessage = 'Erreur de connexion';
+      
+      // PocketBase retourne les erreurs dans err.response.data ou err.data
+      const errorData = err?.response?.data || err?.data || {};
+      const errorMessageRaw = errorData?.message || err?.message || '';
+      
+      // Détecter les erreurs d'authentification
+      const lowerMessage = errorMessageRaw.toLowerCase();
+      
+      if (lowerMessage.includes('invalid login') || 
+          lowerMessage.includes('failed to authenticate') ||
+          lowerMessage.includes('incorrect') ||
+          lowerMessage.includes('wrong password') ||
+          lowerMessage.includes('wrong email') ||
+          errorData?.code === 400) {
+        errorMessage = 'Email ou mot de passe incorrect';
+      } else if (lowerMessage.includes('email')) {
+        errorMessage = 'Adresse email invalide ou introuvable';
+      } else if (lowerMessage.includes('password')) {
+        errorMessage = 'Mot de passe incorrect';
+      } else if (errorMessageRaw) {
+        errorMessage = errorMessageRaw;
+      }
+      
+      setError(errorMessage);
       setLoading(false);
     }
   };
 
-  // Générer des positions et tailles fixes pour éviter les re-renders
+  // Particules pour l'animation de fond
   const particles = Array.from({ length: 12 }, (_, i) => ({
     id: i,
     size: 20 + (i * 7) % 60,
     color: i % 3 === 0 ? '#5B8C5A' : i % 3 === 1 ? '#CFD186' : '#596157',
     left: (i * 23.7) % 100,
     top: (i * 31.3) % 100,
-    animation: `float${i % 3}`,
     duration: 15 + (i * 2.3) % 10,
     delay: (i * 1.7) % 5,
   }));
@@ -48,28 +68,43 @@ export default function LoginPage() {
     id: i,
     left: (i * 37.5) % 100,
     top: (i * 42.3) % 100,
-    animation: `floatLeaf${i % 2}`,
     duration: 20 + (i * 3.1) % 10,
     delay: (i * 2.4) % 8,
     rotation: (i * 45) % 360,
   }));
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-green-50 to-emerald-100">
+    <div style={{
+      position: 'relative',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      background: 'linear-gradient(to bottom right, rgba(168, 213, 162, 0.15), rgba(91, 140, 90, 0.2))',
+      padding: '1rem'
+    }}>
       {/* Arrière-plan animé */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        zIndex: 0
+      }}>
         {/* Particules flottantes */}
         {particles.map((particle) => (
           <div
             key={`particle-${particle.id}`}
-            className="absolute rounded-full opacity-20"
             style={{
+              position: 'absolute',
               width: `${particle.size}px`,
               height: `${particle.size}px`,
               backgroundColor: particle.color,
+              borderRadius: '50%',
               left: `${particle.left}%`,
               top: `${particle.top}%`,
-              animation: `${particle.animation} ${particle.duration}s ease-in-out infinite`,
+              opacity: 0.2,
+              animation: `float${particle.id % 3} ${particle.duration}s ease-in-out infinite`,
               animationDelay: `${particle.delay}s`,
             }}
           />
@@ -79,11 +114,13 @@ export default function LoginPage() {
         {leaves.map((leaf) => (
           <div
             key={`leaf-${leaf.id}`}
-            className="absolute text-4xl opacity-10"
             style={{
+              position: 'absolute',
               left: `${leaf.left}%`,
               top: `${leaf.top}%`,
-              animation: `${leaf.animation} ${leaf.duration}s ease-in-out infinite`,
+              fontSize: '2rem',
+              opacity: 0.1,
+              animation: `floatLeaf${leaf.id % 2} ${leaf.duration}s ease-in-out infinite`,
               animationDelay: `${leaf.delay}s`,
               transform: `rotate(${leaf.rotation}deg)`,
             }}
@@ -93,17 +130,39 @@ export default function LoginPage() {
         ))}
       </div>
 
-      <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
-        <h1 className="mb-6 text-center text-3xl font-bold text-[var(--color-night)]">
-          Byoom
+      {/* Carte principale */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        maxWidth: '380px',
+        backgroundColor: 'white',
+        borderRadius: '20px',
+        padding: '2rem',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+      }}>
+        {/* Titre */}
+        <h1 style={{
+          textAlign: 'center',
+          fontSize: '1.75rem',
+          fontWeight: 700,
+          color: '#52414C',
+          marginBottom: '1.5rem',
+          fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
+        }}>
+          Connexion
         </h1>
-        <p className="mb-6 text-center text-sm text-gray-600">
-          Identifie. Soigne. Collectionne.
-        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#52414C',
+              marginBottom: '0.5rem',
+            }}>
               Email
             </label>
             <input
@@ -112,12 +171,28 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#5B8C5A'}
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#52414C',
+              marginBottom: '0.5rem',
+            }}>
               Mot de passe
             </label>
             <input
@@ -126,12 +201,28 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#5B8C5A'}
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '12px',
+              backgroundColor: '#FEE2E2',
+              color: '#DC2626',
+              fontSize: '0.875rem',
+            }}>
               {error}
             </div>
           )}
@@ -139,49 +230,103 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-[var(--color-moss)] px-4 py-2 font-medium text-white hover:opacity-90 disabled:opacity-50"
+            style={{
+              width: '100%',
+              padding: '0.875rem 1.5rem',
+              borderRadius: '12px',
+              backgroundColor: '#5B8C5A',
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '1rem',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.opacity = '1';
+            }}
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p style={{
+          textAlign: 'center',
+          fontSize: '0.875rem',
+          color: '#596157',
+          marginTop: '1.5rem',
+        }}>
           Pas encore de compte ?{' '}
-          <a href="/register" className="text-[var(--color-moss)] hover:opacity-80">
+          <a href="/register" style={{
+            color: '#5B8C5A',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}>
             S'inscrire
           </a>
         </p>
 
-        {/* Disclaimer - Ajouter à l'écran d'accueil */}
-        <div className="mt-6 rounded-lg border border-[var(--color-moss)] bg-[var(--color-cream)] p-4">
-          <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <p className="mb-2 text-sm font-semibold text-[var(--color-night)]">
-                Ajoute Byoom à ton écran d'accueil
-              </p>
-              <p className="mb-3 text-xs text-gray-700">
-                Pour une meilleure expérience, ajoute Byoom à ton écran d'accueil comme une application native.
-              </p>
-              <button
-                onClick={() => setShowTutorial(!showTutorial)}
-                className="text-xs font-medium text-[var(--color-moss)] hover:opacity-80"
-              >
-                {showTutorial ? 'Masquer le tutoriel' : 'Voir le tutoriel →'}
-              </button>
-            </div>
-          </div>
+        {/* Disclaimer PWA */}
+        <div style={{
+          marginTop: '1.5rem',
+          padding: '1rem',
+          borderRadius: '14px',
+          backgroundColor: '#F5F0E8',
+          border: '1px solid rgba(91, 140, 90, 0.2)',
+        }}>
+          <p style={{
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            color: '#52414C',
+            marginBottom: '0.5rem',
+          }}>
+            Ajoute Byoom à ton écran d'accueil
+          </p>
+          <p style={{
+            fontSize: '0.8rem',
+            color: '#596157',
+            marginBottom: '1rem',
+            lineHeight: '1.5',
+          }}>
+            Pour une meilleure expérience, ajoute Byoom à ton écran d'accueil comme une application native.
+          </p>
+          <button
+            onClick={() => setShowTutorial(!showTutorial)}
+            style={{
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#5B8C5A',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            {showTutorial ? 'Masquer le tutoriel' : 'Voir le tutoriel →'}
+          </button>
 
           {showTutorial && (
-            <div className="mt-4 space-y-4 border-t border-[var(--color-moss)] pt-4">
+            <div style={{
+              marginTop: '1rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid rgba(91, 140, 90, 0.2)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1.25rem',
+            }}>
               {/* iOS */}
               <div>
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="text-lg">🍎</span>
-                  <h4 className="text-sm font-semibold text-[var(--color-night)]">iOS (Safari)</h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '1.25rem' }}>🍎</span>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#52414C' }}>iOS (Safari)</h4>
                 </div>
-                <ol className="ml-6 list-decimal space-y-1.5 text-xs text-gray-700">
+                <ol style={{ marginLeft: '1.5rem', fontSize: '0.75rem', color: '#596157', lineHeight: '1.8' }}>
                   <li>Ouvre Byoom dans Safari</li>
-                  <li>Appuie sur le bouton <strong>Partager</strong> <span className="text-base">⎋</span> en bas de l'écran</li>
+                  <li>Appuie sur le bouton <strong>Partager</strong> <span style={{ fontSize: '1rem' }}>⎋</span> en bas de l'écran</li>
                   <li>Fais défiler et sélectionne <strong>"Sur l'écran d'accueil"</strong></li>
                   <li>Appuie sur <strong>"Ajouter"</strong> en haut à droite</li>
                 </ol>
@@ -189,11 +334,11 @@ export default function LoginPage() {
 
               {/* Android */}
               <div>
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="text-lg">🤖</span>
-                  <h4 className="text-sm font-semibold text-[var(--color-night)]">Android (Chrome)</h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '1.25rem' }}>🤖</span>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: '#52414C' }}>Android (Chrome)</h4>
                 </div>
-                <ol className="ml-6 list-decimal space-y-1.5 text-xs text-gray-700">
+                <ol style={{ marginLeft: '1.5rem', fontSize: '0.75rem', color: '#596157', lineHeight: '1.8' }}>
                   <li>Ouvre Byoom dans Chrome</li>
                   <li>Appuie sur le menu <strong>⋮</strong> en haut à droite</li>
                   <li>Sélectionne <strong>"Ajouter à l'écran d'accueil"</strong> ou <strong>"Installer l'application"</strong></li>
@@ -204,6 +349,31 @@ export default function LoginPage() {
           )}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes float0 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(20px, -20px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        @keyframes float1 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(-30px, 30px) rotate(180deg); }
+        }
+        @keyframes float2 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(30px, -30px) rotate(90deg); }
+          75% { transform: translate(-30px, 30px) rotate(270deg); }
+        }
+        @keyframes floatLeaf0 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(15px, -25px) rotate(15deg); }
+        }
+        @keyframes floatLeaf1 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(-15px, 25px) rotate(-15deg); }
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,7 +1,238 @@
 'use client';
 
+import { useState } from 'react';
 import Link from "next/link";
 import "./landing.css";
+
+function PlanCards() {
+  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
+
+  const plans = [
+    {
+      id: 'monthly',
+      name: 'Mensuel',
+      price: '4,99€',
+      period: '/mois',
+      monthlyEquivalent: null,
+      savings: null,
+      popular: false,
+    },
+    {
+      id: 'quarterly', 
+      name: 'Trimestriel',
+      price: '12,99€',
+      period: '/3 mois',
+      monthlyEquivalent: '4,33€',
+      savings: '-13%',
+      savingsAmount: '0,66€/mois',
+      popular: true,
+    },
+    {
+      id: 'yearly',
+      name: 'Annuel',
+      price: '35,99€',
+      period: '/an',
+      monthlyEquivalent: '3,00€',
+      savings: '-40%',
+      savingsAmount: '1,99€/mois',
+      popular: false,
+    },
+  ];
+
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      gap: '1rem'
+    }}>
+      {plans.map((plan) => {
+        const isExpanded = expandedPlan === plan.id;
+        const hasDetails = plan.monthlyEquivalent && plan.id !== 'monthly';
+
+        return (
+          <div
+            key={plan.id}
+            style={{
+              backgroundColor: plan.popular ? '#5B8C5A' : 'white',
+              borderRadius: '20px',
+              padding: '1.5rem',
+              border: plan.popular 
+                ? 'none' 
+                : '1px solid rgba(0,0,0,0.08)',
+              boxShadow: plan.popular 
+                ? '0 8px 24px rgba(91,140,90,0.25)' 
+                : '0 4px 12px rgba(0,0,0,0.06)',
+            }}
+          >
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              gap: '1rem'
+            }}>
+              {/* Header avec nom, badges et bouton */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.75rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <p style={{ 
+                    fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '1.25rem',
+                    color: plan.popular ? 'white' : '#52414C',
+                    margin: 0
+                  }}>{plan.name}</p>
+                  {plan.savings && (
+                    <span style={{
+                      backgroundColor: plan.popular 
+                        ? 'rgba(255,255,255,0.25)' 
+                        : '#FEF3C7',
+                      color: plan.popular ? 'white' : '#52414C',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: '10px',
+                    }}>{plan.savings}</span>
+                  )}
+                </div>
+                <Link
+                  href="/pricing"
+                  style={{
+                    backgroundColor: plan.popular ? 'white' : '#5B8C5A',
+                    color: plan.popular ? '#5B8C5A' : 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '0.75rem 1.5rem',
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                    boxShadow: plan.popular 
+                      ? '0 4px 12px rgba(255,255,255,0.3)' 
+                      : '0 4px 12px rgba(91,140,90,0.3)',
+                  }}
+                >
+                  Choisir
+                </Link>
+              </div>
+
+              {/* Prix principal */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <p style={{ 
+                  fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
+                  fontSize: '1.75rem',
+                  fontWeight: 700,
+                  color: plan.popular ? 'white' : '#52414C',
+                  margin: 0,
+                  lineHeight: '1.2'
+                }}>
+                  {plan.price}
+                  <span style={{ 
+                    fontSize: '0.9rem', 
+                    fontWeight: 400,
+                    opacity: 0.85,
+                    marginLeft: '0.25rem'
+                  }}>{plan.period}</span>
+                </p>
+                {hasDetails && (
+                  <button
+                    onClick={() => setExpandedPlan(isExpanded ? null : plan.id)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: plan.popular ? 'rgba(255,255,255,0.8)' : '#596157',
+                      cursor: 'pointer',
+                      padding: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                      transition: 'transform 0.2s'
+                    }}
+                  >
+                    <span>{isExpanded ? 'Masquer' : 'Voir'} détails</span>
+                    <span style={{
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s',
+                      display: 'inline-block'
+                    }}>▼</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Détails déroulants */}
+              {hasDetails && isExpanded && (
+                <div style={{
+                  paddingTop: '1rem',
+                  borderTop: plan.popular ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
+                  animation: 'fadeIn 0.3s ease-out'
+                }}>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: plan.popular ? 'rgba(255,255,255,0.95)' : '#596157',
+                    margin: '0 0 1rem 0',
+                    fontWeight: 500
+                  }}>
+                    Soit <strong style={{ color: plan.popular ? 'white' : '#52414C', fontWeight: 700 }}>{plan.monthlyEquivalent}/mois</strong>
+                  </p>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem'
+                  }}>
+                    <div style={{
+                      fontSize: '0.9rem',
+                      color: plan.popular ? 'rgba(255,255,255,0.9)' : '#5B8C5A',
+                      fontWeight: 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <span>✅</span>
+                      <span>vs 4,99€/mois</span>
+                    </div>
+                    {plan.savingsAmount && (
+                      <div style={{
+                        fontSize: '0.9rem',
+                        color: plan.popular ? 'rgba(255,255,255,0.9)' : '#5B8C5A',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <span>💰</span>
+                        <span>Économisez {plan.savingsAmount}</span>
+                      </div>
+                    )}
+                    {plan.savings && (
+                      <div style={{
+                        fontSize: '0.9rem',
+                        color: plan.popular ? 'rgba(255,255,255,0.9)' : '#5B8C5A',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <span>🎯</span>
+                        <span>{plan.savings} de réduction</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Home() {
   const features = [
@@ -135,7 +366,7 @@ export default function Home() {
         <h2 className="section-title-centered">Ce que fait Byoom</h2>
         <div className="features-grid">
           {features.map((feature, index) => (
-            <div key={index} className="feature-card">
+            <div key={index} className={`feature-card feature-card-${index % 6}`}>
               <div className="feature-title">{feature.title}</div>
               <span className="feature-tag">{feature.tag}</span>
             </div>
@@ -171,9 +402,9 @@ export default function Home() {
       </section>
 
       {/* PRICING */}
-      <section className="pricing-landing" id="pricing" style={{ background: 'var(--parchment)', padding: '2rem 3rem' }}>
+      <section className="pricing-landing" id="pricing" style={{ background: 'rgba(168, 213, 162, 0.08)', padding: '2rem 1rem' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+          <div style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
             <span className="section-label" style={{ display: 'block', textAlign: 'center' }}>Abonnement</span>
             <h2 className="section-title" style={{ textAlign: 'center', margin: '0 auto' }}>Débloquez tout Byoom</h2>
             <p style={{color:'rgba(26,46,23,0.6)',lineHeight:1.7,marginBottom:0,fontSize:'0.95rem', textAlign: 'center', maxWidth: '600px', margin: '0.5rem auto 0'}}>
@@ -181,46 +412,47 @@ export default function Home() {
             </p>
           </div>
 
-          {/* TABLEAU COMPARATIF */}
+          {/* TABLEAU COMPARATIF - Version simplifiée */}
           <div style={{
             backgroundColor: 'white',
-            borderRadius: '24px',
-            padding: '2rem',
+            borderRadius: '20px',
+            padding: '1.5rem',
             border: '1px solid rgba(0,0,0,0.08)',
             boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
-            marginBottom: '3rem'
+            marginBottom: '2.5rem'
           }}>
             {/* Desktop Table */}
             <table className="pricing-table-desktop" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ 
-                    textAlign: 'left', 
-                    padding: '1rem',
+                    textAlign: 'center', 
+                    padding: '0.875rem',
                     borderBottom: '2px solid rgba(0,0,0,0.1)',
                     borderRight: '1px solid rgba(0,0,0,0.1)',
                     fontWeight: 700,
-                    fontSize: '1.1rem',
+                    fontSize: '1rem',
                     color: '#52414C'
                   }}>Fonctionnalité</th>
                   <th style={{ 
                     textAlign: 'center', 
-                    padding: '1rem',
+                    padding: '0.875rem',
                     borderBottom: '2px solid rgba(0,0,0,0.1)',
                     borderRight: '1px solid rgba(0,0,0,0.1)',
                     fontWeight: 700,
-                    fontSize: '1.5rem',
+                    fontSize: '1.3rem',
                     color: '#52414C'
                   }}>
                     🆓
                   </th>
                   <th style={{ 
                     textAlign: 'center', 
-                    padding: '1rem',
+                    padding: '0.875rem',
                     borderBottom: '2px solid rgba(0,0,0,0.1)',
                     fontWeight: 700,
-                    fontSize: '1.5rem',
-                    color: '#52414C'
+                    fontSize: '1.3rem',
+                    color: '#52414C',
+                    backgroundColor: 'rgba(254, 243, 199, 0.6)'
                   }}>
                     ⭐
                   </th>
@@ -239,17 +471,18 @@ export default function Home() {
                 ].map((row, i) => (
                   <tr key={i} style={{ borderBottom: i < 7 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
                     <td style={{ 
-                      padding: '1rem',
+                      textAlign: 'center',
+                      padding: '0.875rem',
                       borderRight: '1px solid rgba(0,0,0,0.1)',
                       fontWeight: 500,
                       color: '#52414C',
-                      fontSize: '1rem'
+                      fontSize: '0.95rem'
                     }}>{row.feature}</td>
                     <td style={{ 
                       textAlign: 'center', 
-                      padding: '1rem',
+                      padding: '0.875rem',
                       borderRight: '1px solid rgba(0,0,0,0.1)',
-                      fontSize: '1rem',
+                      fontSize: '0.95rem',
                       color: row.freemium === '❌' ? '#E3655B' : '#596157',
                       fontWeight: 500
                     }}>
@@ -257,10 +490,11 @@ export default function Home() {
                     </td>
                     <td style={{ 
                       textAlign: 'center', 
-                      padding: '1rem',
-                      fontSize: '1rem',
+                      padding: '0.875rem',
+                      fontSize: '0.95rem',
                       color: row.premium === '❌' ? '#E3655B' : '#5B8C5A',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      backgroundColor: 'rgba(254, 243, 199, 0.4)'
                     }}>
                       {row.premium}
                     </td>
@@ -269,7 +503,7 @@ export default function Home() {
               </tbody>
             </table>
             
-            {/* Mobile Cards */}
+            {/* Mobile Cards - Version améliorée */}
             <div className="pricing-table-mobile">
               {[
                 { feature: 'Identifications', freemium: 'Limité', premium: 'Illimité' },
@@ -282,32 +516,33 @@ export default function Home() {
                 { feature: 'Assistant personnalisé', freemium: '❌', premium: '✅' },
               ].map((row, i) => (
                 <div key={i} style={{
-                  padding: '1rem',
-                  borderBottom: i < 7 ? '1px solid rgba(0,0,0,0.1)' : 'none',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem'
+                  padding: '1rem 0.75rem',
+                  borderBottom: i < 7 ? '1px solid rgba(0,0,0,0.08)' : 'none',
                 }}>
                   <div style={{
                     fontWeight: 600,
                     color: '#52414C',
-                    fontSize: '0.95rem',
-                    marginBottom: '0.25rem'
+                    fontSize: '0.9rem',
+                    marginBottom: '0.75rem',
+                    lineHeight: '1.4',
+                    textAlign: 'center'
                   }}>{row.feature}</div>
                   <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '0.75rem'
                   }}>
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      flex: 1
+                      padding: '0.5rem',
+                      backgroundColor: 'rgba(0,0,0,0.02)',
+                      borderRadius: '8px'
                     }}>
-                      <span style={{ fontSize: '1.2rem' }}>🆓</span>
+                      <span style={{ fontSize: '1.1rem' }}>🆓</span>
                       <span style={{
-                        fontSize: '0.9rem',
+                        fontSize: '0.85rem',
                         color: row.freemium === '❌' ? '#E3655B' : '#596157',
                         fontWeight: 500
                       }}>{row.freemium}</span>
@@ -316,12 +551,13 @@ export default function Home() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      flex: 1,
-                      justifyContent: 'flex-end'
+                      padding: '0.5rem',
+                      backgroundColor: 'rgba(254, 243, 199, 0.6)',
+                      borderRadius: '8px'
                     }}>
-                      <span style={{ fontSize: '1.2rem' }}>⭐</span>
+                      <span style={{ fontSize: '1.1rem' }}>⭐</span>
                       <span style={{
-                        fontSize: '0.9rem',
+                        fontSize: '0.85rem',
                         color: row.premium === '❌' ? '#E3655B' : '#5B8C5A',
                         fontWeight: 500
                       }}>{row.premium}</span>
@@ -332,229 +568,15 @@ export default function Home() {
             </div>
           </div>
 
-          {/* PLANS */}
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '1.25rem',
-            position: 'relative',
-            padding: '0 2rem'
-          }}>
-            {/* Délimiteur gauche */}
-            <div style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: '2px',
-              backgroundColor: 'rgba(45, 90, 39, 0.15)',
-              borderRadius: '2px'
-            }} />
-            {/* Délimiteur droit */}
-            <div style={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: '2px',
-              backgroundColor: 'rgba(45, 90, 39, 0.15)',
-              borderRadius: '2px'
-            }} />
-            {[
-              {
-                id: 'monthly',
-                name: 'Mensuel',
-                price: '4,99€',
-                period: '/mois',
-                monthlyEquivalent: '4,99€',
-                savings: null,
-                popular: false,
-              },
-              {
-                id: 'quarterly', 
-                name: 'Trimestriel',
-                price: '12,99€',
-                period: '/3 mois',
-                monthlyEquivalent: '4,33€',
-                savings: '-13%',
-                savingsAmount: '0,66€/mois',
-                popular: true,
-              },
-              {
-                id: 'yearly',
-                name: 'Annuel',
-                price: '35,99€',
-                period: '/an',
-                monthlyEquivalent: '3,00€',
-                savings: '-40%',
-                savingsAmount: '1,99€/mois',
-                popular: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.id}
-                style={{
-                  backgroundColor: plan.popular ? '#5B8C5A' : 'white',
-                  borderRadius: '24px',
-                  padding: '2rem',
-                  border: plan.popular 
-                    ? 'none' 
-                    : '1px solid rgba(0,0,0,0.08)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  boxShadow: plan.popular 
-                    ? '0 12px 32px rgba(91,140,90,0.3)' 
-                    : '0 4px 16px rgba(0,0,0,0.06)',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.75rem',
-                    marginBottom: '0.5rem',
-                    flexWrap: 'wrap'
-                  }}>
-                    <p style={{ 
-                      fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-                      fontWeight: 700,
-                      fontSize: '1.3rem',
-                      color: plan.popular ? 'white' : '#52414C',
-                      margin: 0
-                    }}>{plan.name}</p>
-                    {plan.savings && (
-                      <span style={{
-                        backgroundColor: plan.popular 
-                          ? 'rgba(255,255,255,0.25)' 
-                          : '#FEF3C7',
-                        color: plan.popular ? 'white' : '#52414C',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                      }}>{plan.savings}</span>
-                    )}
-                    {plan.popular && (
-                      <span style={{
-                        backgroundColor: 'rgba(255,255,255,0.25)',
-                        color: 'white',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                      }}>Populaire</span>
-                    )}
-                  </div>
-                  <div>
-                    <p style={{ 
-                      fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-                      fontSize: '2rem',
-                      fontWeight: 700,
-                      color: plan.popular ? 'white' : '#52414C',
-                      margin: 0,
-                      lineHeight: '1.2'
-                    }}>
-                      {plan.price}
-                      <span style={{ 
-                        fontSize: '1rem', 
-                        fontWeight: 400,
-                        opacity: 0.8,
-                        marginLeft: '0.25rem'
-                      }}>{plan.period}</span>
-                    </p>
-                    {plan.monthlyEquivalent && plan.id !== 'monthly' && (
-                      <div style={{
-                        marginTop: '0.75rem',
-                        paddingTop: '0.75rem',
-                        borderTop: plan.popular ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)'
-                      }}>
-                        <p style={{
-                          fontSize: '0.95rem',
-                          color: plan.popular ? 'rgba(255,255,255,0.95)' : '#596157',
-                          margin: '0 0 0.5rem 0',
-                          fontWeight: 500
-                        }}>
-                          Soit <strong style={{ color: plan.popular ? 'white' : '#52414C' }}>{plan.monthlyEquivalent}/mois</strong>
-                        </p>
-                        <div style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.25rem'
-                        }}>
-                          <div style={{
-                            fontSize: '0.9rem',
-                            color: plan.popular ? '#FEF3C7' : '#5B8C5A',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                          }}>
-                            <span>✅</span>
-                            <span>vs 4,99€/mois</span>
-                          </div>
-                          {plan.savingsAmount && (
-                            <div style={{
-                              fontSize: '0.9rem',
-                              color: plan.popular ? '#FEF3C7' : '#5B8C5A',
-                              fontWeight: 600,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem'
-                            }}>
-                              <span>💰</span>
-                              <span>Économisez {plan.savingsAmount}</span>
-                            </div>
-                          )}
-                          {plan.savings && (
-                            <div style={{
-                              fontSize: '0.9rem',
-                              color: plan.popular ? '#FEF3C7' : '#5B8C5A',
-                              fontWeight: 600,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem'
-                            }}>
-                              <span>🎯</span>
-                              <span>{plan.savings} de réduction</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-          <Link
-                  href="/pricing"
-                  style={{
-                    backgroundColor: plan.popular ? 'white' : '#5B8C5A',
-                    color: plan.popular ? '#5B8C5A' : 'white',
-                    border: 'none',
-                    borderRadius: '16px',
-                    padding: '0.875rem 1.75rem',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    textDecoration: 'none',
-                    display: 'inline-block',
-                    boxShadow: plan.popular 
-                      ? '0 4px 12px rgba(255,255,255,0.3)' 
-                      : '0 4px 12px rgba(91,140,90,0.3)',
-                  }}
-                >
-                  Choisir
-          </Link>
-              </div>
-            ))}
-          </div>
+          {/* PLANS - Version simplifiée et responsive */}
+          <PlanCards />
 
           {/* MENTION */}
           <p style={{ 
             textAlign: 'center', 
             color: '#596157', 
             fontSize: '0.75rem',
-            marginTop: '1.5rem',
+            marginTop: '2rem',
             opacity: 0.7
           }}>
             Paiement sécurisé par Stripe · Résiliation à tout moment

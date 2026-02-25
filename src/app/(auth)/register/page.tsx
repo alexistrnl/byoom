@@ -52,19 +52,114 @@ export default function RegisterPage() {
     }
   };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
-        <h1 className="mb-6 text-center text-3xl font-bold text-[var(--color-night)]">
-          🌿 Byoom
-        </h1>
-        <p className="mb-6 text-center text-sm text-gray-600">
-          Rejoignez la communauté des jardiniers
-        </p>
+  // Particules pour l'animation de fond
+  const particles = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    size: 20 + (i * 7) % 60,
+    color: i % 3 === 0 ? '#5B8C5A' : i % 3 === 1 ? '#CFD186' : '#596157',
+    left: (i * 23.7) % 100,
+    top: (i * 31.3) % 100,
+    duration: 15 + (i * 2.3) % 10,
+    delay: (i * 1.7) % 5,
+  }));
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+  const leaves = Array.from({ length: 8 }, (_, i) => ({
+    id: i,
+    left: (i * 37.5) % 100,
+    top: (i * 42.3) % 100,
+    duration: 20 + (i * 3.1) % 10,
+    delay: (i * 2.4) % 8,
+    rotation: (i * 45) % 360,
+  }));
+
+  return (
+    <div style={{
+      position: 'relative',
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      background: 'linear-gradient(to bottom right, rgba(168, 213, 162, 0.15), rgba(91, 140, 90, 0.2))',
+      padding: '1rem'
+    }}>
+      {/* Arrière-plan animé */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        zIndex: 0
+      }}>
+        {/* Particules flottantes */}
+        {particles.map((particle) => (
+          <div
+            key={`particle-${particle.id}`}
+            style={{
+              position: 'absolute',
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              backgroundColor: particle.color,
+              borderRadius: '50%',
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              opacity: 0.2,
+              animation: `float${particle.id % 3} ${particle.duration}s ease-in-out infinite`,
+              animationDelay: `${particle.delay}s`,
+            }}
+          />
+        ))}
+        
+        {/* Feuilles flottantes */}
+        {leaves.map((leaf) => (
+          <div
+            key={`leaf-${leaf.id}`}
+            style={{
+              position: 'absolute',
+              left: `${leaf.left}%`,
+              top: `${leaf.top}%`,
+              fontSize: '2rem',
+              opacity: 0.1,
+              animation: `floatLeaf${leaf.id % 2} ${leaf.duration}s ease-in-out infinite`,
+              animationDelay: `${leaf.delay}s`,
+              transform: `rotate(${leaf.rotation}deg)`,
+            }}
+          >
+            🌿
+          </div>
+        ))}
+      </div>
+
+      {/* Carte principale */}
+      <div style={{
+        position: 'relative',
+        zIndex: 10,
+        width: '100%',
+        maxWidth: '380px',
+        backgroundColor: 'white',
+        borderRadius: '20px',
+        padding: '2rem',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+      }}>
+        <h1 style={{
+          textAlign: 'center',
+          fontSize: '1.75rem',
+          fontWeight: 700,
+          color: '#52414C',
+          marginBottom: '1.5rem',
+          fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
+        }}>
+          Inscription
+        </h1>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="username" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#52414C',
+              marginBottom: '0.5rem',
+            }}>
               Nom d'utilisateur
             </label>
             <input
@@ -73,12 +168,28 @@ export default function RegisterPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#5B8C5A'}
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#52414C',
+              marginBottom: '0.5rem',
+            }}>
               Email
             </label>
             <input
@@ -87,12 +198,28 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#5B8C5A'}
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#52414C',
+              marginBottom: '0.5rem',
+            }}>
               Mot de passe
             </label>
             <input
@@ -101,12 +228,28 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#5B8C5A'}
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
           <div>
-            <label htmlFor="passwordConfirm" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="passwordConfirm" style={{
+              display: 'block',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: '#52414C',
+              marginBottom: '0.5rem',
+            }}>
               Confirmer le mot de passe
             </label>
             <input
@@ -115,12 +258,28 @@ export default function RegisterPage() {
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-green-500 focus:outline-none focus:ring-green-500"
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: '1px solid #E5E7EB',
+                fontSize: '0.95rem',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#5B8C5A'}
+              onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
             />
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '12px',
+              backgroundColor: '#FEE2E2',
+              color: '#DC2626',
+              fontSize: '0.875rem',
+            }}>
               {error}
             </div>
           )}
@@ -128,19 +287,71 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-[var(--color-moss)] px-4 py-2 font-medium text-white hover:opacity-90 disabled:opacity-50"
+            style={{
+              width: '100%',
+              padding: '0.875rem 1.5rem',
+              borderRadius: '12px',
+              backgroundColor: '#5B8C5A',
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '1rem',
+              border: 'none',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.opacity = '0.9';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.opacity = '1';
+            }}
           >
             {loading ? 'Inscription...' : "S'inscrire"}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
+        <p style={{
+          textAlign: 'center',
+          fontSize: '0.875rem',
+          color: '#596157',
+          marginTop: '1.5rem',
+        }}>
           Déjà un compte ?{' '}
-          <a href="/login" className="text-[var(--color-moss)] hover:opacity-80">
+          <a href="/login" style={{
+            color: '#5B8C5A',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}>
             Se connecter
           </a>
         </p>
       </div>
+
+      <style jsx>{`
+        @keyframes float0 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(20px, -20px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        @keyframes float1 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(-30px, 30px) rotate(180deg); }
+        }
+        @keyframes float2 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(30px, -30px) rotate(90deg); }
+          75% { transform: translate(-30px, 30px) rotate(270deg); }
+        }
+        @keyframes floatLeaf0 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(15px, -25px) rotate(15deg); }
+        }
+        @keyframes floatLeaf1 {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          50% { transform: translate(-15px, 25px) rotate(-15deg); }
+        }
+      `}</style>
     </div>
   );
 }
