@@ -12,11 +12,18 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   background: var(--cream);
   color: var(--night);
-  overflow-x: hidden;
+  padding-top: 0;
 }
 
 /* NOISE TEXTURE */
@@ -33,7 +40,9 @@ body::before {
 /* NAV */
 nav {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   padding: 1.25rem 3rem;
   display: flex;
@@ -42,6 +51,11 @@ nav {
   background: rgba(245, 242, 235, 0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(45, 90, 39, 0.1);
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .logo {
@@ -1048,7 +1062,22 @@ footer {
 .hero-content > *:nth-child(4) { animation-delay: 0.4s; }
 
 @media (max-width: 768px) {
-  nav { padding: 1rem 1.5rem; }
+  nav { 
+    padding: 1rem 1.5rem;
+    top: 0;
+    margin: 0;
+    position: fixed;
+  }
+  
+  /* Fix pour iOS Safari */
+  @supports (-webkit-touch-callout: none) {
+    nav {
+      top: 0;
+      position: fixed;
+      margin: 0;
+      padding-top: env(safe-area-inset-top, 0);
+    }
+  }
   .nav-links { display: none; }
   .nav-right { gap: 0; }
   .hero { grid-template-columns: 1fr; padding: 6rem 1.5rem 3rem; gap: 3rem; }

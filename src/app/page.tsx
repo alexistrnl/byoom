@@ -462,12 +462,12 @@ export default function Home() {
                 {[
                   { feature: 'Identifications', freemium: 'Limité', premium: 'Illimité' },
                   { feature: 'Diagnostics', freemium: 'Limité', premium: 'Illimité' },
-                  { feature: 'Accès à la Byoombase', freemium: '❌', premium: '✅' },
+                  { feature: 'Accès à la Byoombase', freemium: '❌', premium: 'Inclus' },
                   { feature: 'Chat botanique', freemium: 'Limité', premium: 'Illimité' },
-                  { feature: 'Historique des diagnostics', freemium: '❌', premium: '✅' },
-                  { feature: 'Nouveautés en avant-première', freemium: '❌', premium: '✅' },
-                  { feature: 'Guide d\'entretien détaillé', freemium: '❌', premium: '✅' },
-                  { feature: 'Assistant personnalisé', freemium: '❌', premium: '✅' },
+                  { feature: 'Historique des diagnostics', freemium: '❌', premium: 'Inclus' },
+                  { feature: 'Nouveautés en avant-première', freemium: '❌', premium: 'Inclus' },
+                  { feature: 'Guide d\'entretien détaillé', freemium: '❌', premium: 'Inclus' },
+                  { feature: 'Assistant personnalisé', freemium: '❌', premium: 'Inclus' },
                 ].map((row, i) => (
                   <tr key={i} style={{ borderBottom: i < 7 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
                     <td style={{ 
@@ -508,12 +508,12 @@ export default function Home() {
               {[
                 { feature: 'Identifications', freemium: 'Limité', premium: 'Illimité' },
                 { feature: 'Diagnostics', freemium: 'Limité', premium: 'Illimité' },
-                { feature: 'Accès à la Byoombase', freemium: '❌', premium: '✅' },
+                { feature: 'Accès à la Byoombase', freemium: '❌', premium: 'Inclus' },
                 { feature: 'Chat botanique', freemium: 'Limité', premium: 'Illimité' },
-                { feature: 'Historique des diagnostics', freemium: '❌', premium: '✅' },
-                { feature: 'Nouveautés en avant-première', freemium: '❌', premium: '✅' },
-                { feature: 'Guide d\'entretien détaillé', freemium: '❌', premium: '✅' },
-                { feature: 'Assistant personnalisé', freemium: '❌', premium: '✅' },
+                { feature: 'Historique des diagnostics', freemium: '❌', premium: 'Inclus' },
+                { feature: 'Nouveautés en avant-première', freemium: '❌', premium: 'Inclus' },
+                { feature: 'Guide d\'entretien détaillé', freemium: '❌', premium: 'Inclus' },
+                { feature: 'Assistant personnalisé', freemium: '❌', premium: 'Inclus' },
               ].map((row, i) => (
                 <div key={i} style={{
                   padding: '1rem 0.75rem',
