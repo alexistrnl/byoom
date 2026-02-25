@@ -1,13 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import "./landing.css";
 
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  
   const features = [
     {
       icon: "🔍",
@@ -28,22 +24,10 @@ export default function Home() {
       tag: "Expert"
     },
     {
-      icon: "🌿",
-      title: "Byoombase",
-      desc: "Constitue ta collection au fil des identifications. Débloque de nouvelles plantes, compare avec d'autres collectionneurs.",
-      tag: "Collection"
-    },
-    {
       icon: "🔄",
       title: "Compatibilité",
       desc: "Teste si deux plantes peuvent cohabiter dans le même pot. L'IA analyse lumière, eau, pH et parasites communs.",
       tag: "IA"
-    },
-    {
-      icon: "🍳",
-      title: "Recettes Botaniques",
-      desc: "Pour les plantes comestibles, découvre des recettes adaptées. Herbes, fleurs comestibles, légumes — cuisine avec ce que tu cultives.",
-      tag: "Comestibles"
     },
     {
       icon: "🎮",
@@ -52,77 +36,12 @@ export default function Home() {
       tag: "Points & Badges"
     },
     {
-      icon: "🌐",
-      title: "Vitrine Publique",
-      desc: "Partage ta collection avec le monde. Une page publique pour montrer tes plus belles plantes et ton score de jardinier.",
-      tag: "Communauté"
-    },
-    {
-      icon: "🔔",
-      title: "Rappels Intelligents",
-      desc: "Arrosage, fertilisation, rempotage… Byoom te prévient au bon moment selon la saison et la santé de chaque plante.",
-      tag: "PWA"
+      icon: "💬",
+      title: "Assistant Botanique",
+      desc: "Pose tes questions sur tes plantes et reçois des conseils personnalisés basés sur l'IA. Ton assistant jardinier disponible 24/7.",
+      tag: "Chat IA"
     }
   ];
-
-  const totalSlides = features.length;
-  
-  const nextSlide = () => {
-    const newSlide = (currentSlide + 1) % totalSlides;
-    setCurrentSlide(newSlide);
-    // Scroller vers le slide sur mobile
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: newSlide * carouselRef.current.clientWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-  
-  const prevSlide = () => {
-    const newSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-    setCurrentSlide(newSlide);
-    // Scroller vers le slide sur mobile
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: newSlide * carouselRef.current.clientWidth,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  // Mettre à jour le slide actuel lors du scroll (mobile)
-  useEffect(() => {
-    const container = carouselRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
-      const slideWidth = container.clientWidth;
-      const newSlide = Math.round(scrollLeft / slideWidth);
-      if (newSlide !== currentSlide && newSlide >= 0 && newSlide < totalSlides) {
-        setCurrentSlide(newSlide);
-      }
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [currentSlide, totalSlides]);
-
-  // Synchroniser le scroll avec currentSlide quand on clique sur un point
-  useEffect(() => {
-    const container = carouselRef.current;
-    if (!container) return;
-    
-    // Vérifier si on est sur mobile (scroll activé)
-    const isMobile = window.innerWidth <= 768;
-    if (isMobile) {
-      container.scrollTo({
-        left: currentSlide * container.clientWidth,
-        behavior: 'smooth'
-      });
-    }
-  }, [currentSlide]);
   
   return (
     <>
@@ -214,40 +133,13 @@ export default function Home() {
       {/* FEATURES */}
       <section className="features" id="features">
         <h2 className="section-title-centered">Ce que fait Byoom</h2>
-        <div className="features-carousel">
-          <button className="carousel-btn carousel-btn-prev" onClick={prevSlide} aria-label="Précédent">
-            ‹
-          </button>
-          <div className="features-carousel-container" ref={carouselRef}>
-            <div 
-              className="features-carousel-track"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {features.map((feature, index) => (
-                <div key={index} className="features-slide">
-                  <div className="feature-card">
-                    <span className="feature-icon">{feature.icon}</span>
-                    <div className="feature-title">{feature.title}</div>
-                    <p className="feature-desc">{feature.desc}</p>
-                    <span className="feature-tag">{feature.tag}</span>
-                  </div>
-                </div>
-              ))}
+        <div className="features-grid">
+          {features.map((feature, index) => (
+            <div key={index} className="feature-card">
+              <div className="feature-title">{feature.title}</div>
+              <span className="feature-tag">{feature.tag}</span>
             </div>
-          </div>
-          <button className="carousel-btn carousel-btn-next" onClick={nextSlide} aria-label="Suivant">
-            ›
-          </button>
-          <div className="carousel-dots">
-            {Array.from({ length: totalSlides }).map((_, index) => (
-              <button
-                key={index}
-                className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
-                onClick={() => setCurrentSlide(index)}
-                aria-label={`Aller à la slide ${index + 1}`}
-              />
-            ))}
-          </div>
+          ))}
         </div>
       </section>
 
@@ -281,10 +173,10 @@ export default function Home() {
       {/* PRICING */}
       <section className="pricing-landing" id="pricing" style={{ background: 'var(--parchment)', padding: '2rem 3rem' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ marginBottom: '2rem' }}>
-            <span className="section-label">Abonnement</span>
-            <h2 className="section-title">Débloquez tout Byoom</h2>
-            <p style={{color:'rgba(26,46,23,0.6)',lineHeight:1.7,marginBottom:0,fontSize:'0.95rem'}}>
+          <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+            <span className="section-label" style={{ display: 'block', textAlign: 'center' }}>Abonnement</span>
+            <h2 className="section-title" style={{ textAlign: 'center', margin: '0 auto' }}>Débloquez tout Byoom</h2>
+            <p style={{color:'rgba(26,46,23,0.6)',lineHeight:1.7,marginBottom:0,fontSize:'0.95rem', textAlign: 'center', maxWidth: '600px', margin: '0.5rem auto 0'}}>
               Identifications illimitées, diagnostics experts, accès complet à la Byoombase et bien plus.
             </p>
           </div>
@@ -296,10 +188,10 @@ export default function Home() {
             padding: '2rem',
             border: '1px solid rgba(0,0,0,0.08)',
             boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
-            marginBottom: '3rem',
-            overflowX: 'auto'
+            marginBottom: '3rem'
           }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            {/* Desktop Table */}
+            <table className="pricing-table-desktop" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ 
@@ -376,10 +268,98 @@ export default function Home() {
                 ))}
               </tbody>
             </table>
+            
+            {/* Mobile Cards */}
+            <div className="pricing-table-mobile">
+              {[
+                { feature: 'Identifications', freemium: 'Limité', premium: 'Illimité' },
+                { feature: 'Diagnostics', freemium: 'Limité', premium: 'Illimité' },
+                { feature: 'Accès à la Byoombase', freemium: '❌', premium: '✅' },
+                { feature: 'Chat botanique', freemium: 'Limité', premium: 'Illimité' },
+                { feature: 'Historique des diagnostics', freemium: '❌', premium: '✅' },
+                { feature: 'Nouveautés en avant-première', freemium: '❌', premium: '✅' },
+                { feature: 'Guide d\'entretien détaillé', freemium: '❌', premium: '✅' },
+                { feature: 'Assistant personnalisé', freemium: '❌', premium: '✅' },
+              ].map((row, i) => (
+                <div key={i} style={{
+                  padding: '1rem',
+                  borderBottom: i < 7 ? '1px solid rgba(0,0,0,0.1)' : 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem'
+                }}>
+                  <div style={{
+                    fontWeight: 600,
+                    color: '#52414C',
+                    fontSize: '0.95rem',
+                    marginBottom: '0.25rem'
+                  }}>{row.feature}</div>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      flex: 1
+                    }}>
+                      <span style={{ fontSize: '1.2rem' }}>🆓</span>
+                      <span style={{
+                        fontSize: '0.9rem',
+                        color: row.freemium === '❌' ? '#E3655B' : '#596157',
+                        fontWeight: 500
+                      }}>{row.freemium}</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      flex: 1,
+                      justifyContent: 'flex-end'
+                    }}>
+                      <span style={{ fontSize: '1.2rem' }}>⭐</span>
+                      <span style={{
+                        fontSize: '0.9rem',
+                        color: row.premium === '❌' ? '#E3655B' : '#5B8C5A',
+                        fontWeight: 500
+                      }}>{row.premium}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* PLANS */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '1.25rem',
+            position: 'relative',
+            padding: '0 2rem'
+          }}>
+            {/* Délimiteur gauche */}
+            <div style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '2px',
+              backgroundColor: 'rgba(45, 90, 39, 0.15)',
+              borderRadius: '2px'
+            }} />
+            {/* Délimiteur droit */}
+            <div style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: '2px',
+              backgroundColor: 'rgba(45, 90, 39, 0.15)',
+              borderRadius: '2px'
+            }} />
             {[
               {
                 id: 'monthly',

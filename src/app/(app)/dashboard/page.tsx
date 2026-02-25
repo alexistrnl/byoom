@@ -223,10 +223,10 @@ function DashboardContent() {
         </div>
       )}
 
-      <div
-        className="min-h-screen"
-        style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
-      >
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: '#F5F0E8', fontFamily: 'system-ui, sans-serif' }}
+    >
       <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
         {/* HEADER avec fond dégradé */}
         <div className="mb-6 rounded-3xl p-6 md:mb-8 md:p-8" style={{ 
@@ -235,14 +235,14 @@ function DashboardContent() {
         }}>
           <div className="flex items-start justify-between">
             <div className="mb-2 flex-1">
-              <h1
-                className="mb-2 font-serif font-bold text-3xl text-white md:text-4xl"
-              >
+            <h1
+              className="mb-2 font-serif font-bold text-3xl text-white md:text-4xl"
+            >
                 Bonjour <strong>{getUserName()}</strong> 👋
-              </h1>
-              <p className="text-sm text-white opacity-95 md:text-base">
-                {getGreeting()}
-              </p>
+            </h1>
+            <p className="text-sm text-white opacity-95 md:text-base">
+              {getGreeting()}
+            </p>
             </div>
             <Link
               href="/profile"
@@ -705,7 +705,7 @@ function DashboardContent() {
         </div>
       </div>
       <BotanicAssistant />
-      </div>
+    </div>
     </>
   );
 }
